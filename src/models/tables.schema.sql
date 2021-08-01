@@ -19,7 +19,6 @@ CREATE TABLE auth(
     token varchar(255),
     user_role varchar(255)
 );
-
 CREATE TABLE users(
   id SERIAL PRIMARY KEY,
   firstName varchar(255) NOT NULL,
