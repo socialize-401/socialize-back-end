@@ -8,6 +8,7 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const base64 = require('base-64');
 const bcrypt = require('bcrypt');
+const pool = require('../../pool.js');
 
 router.get('/confirmation/:token', async (req, res) => {
   try {
@@ -16,7 +17,7 @@ router.get('/confirmation/:token', async (req, res) => {
   } catch (e) {
     res.send(e.message);
   }
-  return res.redirect('http://localhost:3000/login');
+  return res.redirect('http://localhost:3000/feedPage');
 });
 
 router.get('/signin', async (req, res) => {
@@ -29,7 +30,7 @@ router.get('/signin', async (req, res) => {
     let decodedString = base64.decode(encodedString); // "username:password"
     let [email, password] = decodedString.split(':'); // username, password
     let checks = await Interface.read(email);
-    console.log(checks.rows[0]);
+    // console.log(checks.rows[0]);
     if (checks.rows[0] === undefined) {
       throw new Error('invaild login');
     }
@@ -43,7 +44,12 @@ router.get('/signin', async (req, res) => {
         throw new Error('not verified');
       }
       console.log('logged in');
-      return res.send('loggedin');
+
+      let sql = `SELECT * FROM users WHERE id=$1;`;
+      let value = [checks.rows[0].id]
+      let user = await pool.query(sql, value)
+      console.log(user.rows[0]);
+      return res.send(user.rows[0]);
     }
   } catch (e) {
     console.log(e.message);
