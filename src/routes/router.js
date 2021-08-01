@@ -20,7 +20,7 @@ router.get('/confirmation/:token', async (req, res) => {
 });
 
 router.get('/signin', async (req, res) => {
-  console.log(req);
+  // console.log(req);
 
   try {
     // console.log(req.headers.authorization);

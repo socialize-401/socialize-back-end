@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS auth;
 
 CREATE TABLE auth(
-    id SERIAL PRIMARY KEY NOT NULL UNIQUE,
+    id SERIAL PRIMARY KEY  NOT NULL UNIQUE,
     Email varchar(255) NOT NULL ,
     pass text NOT NULL,
     token varchar(255),
@@ -31,15 +31,15 @@ CREATE TABLE users(
 );
 CREATE TABLE friends(
     id SERIAL PRIMARY KEY,
-    receiver int NOT NULL,
-    sender int NOT NULL,
-    FOREIGN KEY (sender) REFERENCES users(auth_id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver) REFERENCES users(id) ON DELETE CASCADE
+    receiverID int NOT NULL,
+    senderID int NOT NULL,
+    FOREIGN KEY (senderID) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiverID) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE TABLE posts(
     id SERIAL PRIMARY KEY,
     content text,
-    poster_id int NOT NULL UNIQUE,
+    poster_id int NOT NULL ,
     FOREIGN KEY (poster_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE TABLE comments(
@@ -63,7 +63,7 @@ CREATE TABLE messages(
     content text,
     receiver int NOT NULL,
     sender int NOT NULL,
-    FOREIGN KEY (sender) REFERENCES users(auth_id) ON DELETE CASCADE,
+    FOREIGN KEY (sender) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -74,24 +74,24 @@ CREATE TABLE groups(
 
 CREATE TABLE user_groups(
     id SERIAL PRIMARY KEY,
-    group_id int NOT NULL UNIQUE,
-    member_id int NOT NULL UNIQUE,
+    group_id int NOT NULL ,
+    member_id int NOT NULL ,
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
     FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE TABLE G_posts(
     id SERIAL PRIMARY KEY,
     content text,
-    G_member_id int NOT NULL UNIQUE,
-    G_groups_id int NOT NULL UNIQUE,
-    FOREIGN KEY (G_member_id) REFERENCES user_groups(member_id) ON DELETE CASCADE,
-    FOREIGN KEY (G_groups_id) REFERENCES user_groups(group_id) ON DELETE CASCADE
+    G_member_id int NOT NULL ,
+    G_groups_id int NOT NULL ,
+    FOREIGN KEY (G_member_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (G_groups_id) REFERENCES groups(id) ON DELETE CASCADE
 );
 CREATE TABLE G_likes(
     id SERIAL PRIMARY KEY,
     G_liker int NOT NULL,
     G_post_id int NOT NULL,
-    FOREIGN KEY (G_liker) REFERENCES user_groups(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (G_liker) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (G_post_id) REFERENCES G_posts(id) ON DELETE CASCADE
 );
 CREATE TABLE G_comments(
@@ -99,7 +99,7 @@ CREATE TABLE G_comments(
     content text,
     G_commenter_id int,
     G_post_id int,
-    FOREIGN KEY (G_commenter_id) REFERENCES user_groups(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (G_commenter_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (G_post_id) REFERENCES G_posts(id) ON DELETE CASCADE
 );
 
@@ -109,5 +109,5 @@ CREATE TABLE G_mods(
     group_id int,
     member int,
     FOREIGN KEY (group_id) REFERENCES groups(id),
-    FOREIGN KEY (member) REFERENCES user_groups(member_id)
+    FOREIGN KEY (member) REFERENCES users(id)
 )

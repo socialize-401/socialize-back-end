@@ -11,7 +11,7 @@ const SECRET = process.env.SECRET;
 class Interface {
 
     static create = async (obj) => {
-        let sql = `INSERT INTO auth (Email,pass,token) VALUES ($1,$2,$3) RETURNING *`;
+        let sql = `INSERT INTO auth (Email,pass,token) VALUES ($1,$2,$3) RETURNING *;`;
         let sql1 = `INSERT INTO users (firstName,lastName) VALUES ($1,$2) RETURNING *;`;
         let hashedPassword = await bcrypt.hash(obj.pass,10)
         let token = jwt.sign({

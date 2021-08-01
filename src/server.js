@@ -9,6 +9,7 @@ const io = require('socket.io')(http);
 const uuid = require('uuid').v4;
 const router = require('./routes/router');
 const nodemailer = require('nodemailer');
+const { Socket } = require('dgram');
 
 app.use(cors());
 
@@ -24,6 +25,15 @@ app.use(cors());
 app.use(express.json());
 app.use(router);
 io.listen(server);
+io.on('connection',(Socket)=>{
+  Socket.on('test',(data)=> {
+    
+      console.log('true ...');
+    
+  })
+})
+
+
 
 function start(port) {
   server.listen(port, () => {
