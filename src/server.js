@@ -26,9 +26,10 @@ app.use(express.json());
 app.use(router);
 io.listen(server);
 io.on('connection',(Socket)=>{
-  Socket.on('test',(data)=> {
+  console.log('before test');
+  Socket.on('test',()=> {
     
-      console.log('true ...');
+      console.log('Connected');
     
   })
 })

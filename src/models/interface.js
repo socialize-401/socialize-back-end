@@ -56,6 +56,7 @@ class Interface {
         let value = [true,email];
         return pool.query(sql,value);
     }
+   
 }
 
 module.exports = Interface;
