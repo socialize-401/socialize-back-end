@@ -87,6 +87,42 @@ class Interface {
     console.log('result', result);
     return result;
   };
+
+  static getFollowing = async (data) => {
+    let sql = `SELECT * FROM friends WHERE senderid=$1;`;
+    let values = [data.userID];
+    let getFollowing = await pool.query(sql, values);
+
+    let result = [];
+
+    for (let i = 0; i < getFollowing.rows.length; i++) {
+      let tempsql = `SELECT * FROM users WHERE id=$1;`;
+      let tempvalues = [getFollowing.rows[i].receiverid];
+      let tempdata = await pool.query(tempsql, tempvalues);
+      console.log('hi', tempdata.rows);
+      result.push(tempdata.rows[0]);
+    }
+    console.log('result', result);
+    return result;
+  };
+
+  static getFollowers = async (data) => {
+    let sql = `SELECT * FROM friends WHERE receiverid=$1;`;
+    let values = [data.userID];
+    let getFollowers = await pool.query(sql, values);
+
+    let result = [];
+
+    for (let i = 0; i < getFollowers.rows.length; i++) {
+      let tempsql = `SELECT * FROM users WHERE id=$1;`;
+      let tempvalues = [getFollowers.rows[i].senderid];
+      let tempdata = await pool.query(tempsql, tempvalues);
+      console.log('hi', tempdata.rows);
+      result.push(tempdata.rows[0]);
+    }
+    console.log('result', result);
+    return result;
+  };
 }
 
 module.exports = Interface;

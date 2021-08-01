@@ -49,6 +49,13 @@ io.on('connection', (Socket) => {
     // console.log(result);
     Socket.emit('returnFollowing', result);
   });
+
+  Socket.on('getFollowers', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getFollowers(data);
+    // console.log(result);
+    Socket.emit('returnFollowers', result);
+  });
 });
 
 function start(port) {
