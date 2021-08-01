@@ -10,6 +10,7 @@ const uuid = require('uuid').v4;
 const router = require('./routes/router');
 const nodemailer = require('nodemailer');
 const { Socket } = require('dgram');
+const Interface = require('./models/interface');
 
 app.use(cors());
 
@@ -25,16 +26,30 @@ app.use(cors());
 app.use(express.json());
 app.use(router);
 io.listen(server);
-io.on('connection',(Socket)=>{
+io.on('connection', (Socket) => {
   console.log('before test');
-  Socket.on('test',()=> {
-    
-      console.log('Connected');
-    
-  })
-})
+  Socket.on('test', () => {
+    console.log('Connected');
+  });
 
+  Socket.on('getAllUsers', async () => {
+    let result = await Interface.getAllUsers();
+    Socket.emit('returnAllUsers', result);
+  });
 
+  Socket.on('addFriend', async (data) => {
+    // console.log(data);
+    let result = await Interface.addFriend(data);
+    // console.log(result);
+  });
+
+  Socket.on('getFollowing', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getFollowing(data);
+    // console.log(result);
+    Socket.emit('returnFollowing', result);
+  });
+});
 
 function start(port) {
   server.listen(port, () => {

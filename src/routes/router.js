@@ -17,7 +17,7 @@ router.get('/confirmation/:token', async (req, res) => {
   } catch (e) {
     res.send(e.message);
   }
-  return res.redirect('http://localhost:3000/feedPage');
+  return res.redirect('http://localhost:3000/');
 });
 
 router.get('/signin', async (req, res) => {
@@ -46,8 +46,8 @@ router.get('/signin', async (req, res) => {
       console.log('logged in');
 
       let sql = `SELECT * FROM users WHERE id=$1;`;
-      let value = [checks.rows[0].id]
-      let user = await pool.query(sql, value)
+      let value = [checks.rows[0].id];
+      let user = await pool.query(sql, value);
       console.log(user.rows[0]);
       return res.send(user.rows[0]);
     }
@@ -57,11 +57,11 @@ router.get('/signin', async (req, res) => {
   }
 });
 
-router.get('/logout', async (req, res) => {
-  //   console.log(req);
-  console.log('loggedout');
-  res.send('huiasdjfhak');
-});
+// router.get('/logout', async (req, res) => {
+//   //   console.log(req);
+//   console.log('loggedout');
+//   res.send('huiasdjfhak');
+// });
 
 router.post('/signup', checker, async (req, res) => {
   try {
