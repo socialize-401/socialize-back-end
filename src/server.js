@@ -37,9 +37,13 @@ io.on('connection', (Socket) => {
   //---------creating the posts-----------//
   Socket.on('post', async (payload) => {
     try {
-      await Interface.createPost(payload);
-      let allPosts = await Interface.getAllPosts();
-      Socket.emit('read', allPosts.rows);
+      // console.log(payload);
+      let created = await Interface.createPost(payload);
+      // console.log('payload of post',payload);
+      let friends = await Interface.getFollowing(payload);
+      let allPosts = await Interface.getAllPosts(friends,payload);
+      //------declare a new psot has been added to all client-----//
+      io.emit('newPost');
     } catch (e) {
       let payload = e;
       Socket.emit('error', payload);
@@ -64,8 +68,10 @@ io.on('connection', (Socket) => {
 
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async (payload) => {
-    let allPosts = await Interface.getAllPosts();
-    Socket.emit('read', allPosts.rows);
+    let friends = await Interface.getFollowing(payload);
+      let allPosts = await Interface.getAllPosts(friends,payload);
+      console.log('before sending the posts:',allPosts);
+      Socket.emit('read', allPosts);
   });
 
 
@@ -81,10 +87,15 @@ io.on('connection', (Socket) => {
   //   Socket.join(`${payload.reciverId}`);
   // });
 
-  //-----user joining his own room------//
-    // Socket.on('joinMyRoom',(payload)=>{
-    //   Socket.join(`${payload.userID}`);
-    // });    
+  // //-----user joining necessary rooms------//
+  //   Socket.on('join',async (payload)=>{
+  //     Socket.join(`${payload.userID}`);
+  //     let friends = await Interface.getFollowing(payload);
+  //     console.log(friends);
+  //     for(let i=0;i<friends.length;i++){
+  //       Socket.join(`${friends[i].id}`);
+  //     }
+  //   });    
 
 
   Socket.on('addFriend', async (data) => {
