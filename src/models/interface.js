@@ -70,6 +70,45 @@ class Interface {
     return addedFriend.rows[0];
   };
 
+  static sendMessage = async (data) => {
+    let senderSql = `SELECT * FROM users WHERE id=$1;`;
+    let senderValues = [data.senderId];
+    let senderName = await pool.query(senderSql, senderValues);
+
+    let receiverSql = `SELECT * FROM users WHERE id=$1;`;
+    let receiverValues = [data.receiverId];
+    let receiverName = await pool.query(receiverSql, receiverValues);
+
+    let sql = `INSERT INTO messages (receiver,sender,content,room,receiver_name,sender_name) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;`;
+    let values = [data.receiverId, data.senderId, data.messageContent, data.messageRoomId, receiverName.rows[0].firstname, senderName.rows[0].firstname];
+    let newMessage = await pool.query(sql, values);
+    return newMessage.rows[0];
+  };
+
+  static returnMessages = async (room) => {
+    let sql = `SELECT * FROM messages WHERE room=$1;`;
+    let values = [room];
+    let allMessages = await pool.query(sql, values);
+
+    return allMessages.rows;
+  };
+
+  static createGroup = async (obj) => {
+    let sql = `INSERT INTO groups (group_name,owner_id,group_description) VALUES ($1,$2,$3) RETURNING *;`;
+    let values = [obj.group_name, obj.group_owner, obj.group_description]
+    let query = await pool.query(sql, values);
+    return query.rows[0];
+  }
+  
+
+  static getAllGroups = async (data) => {
+    let sql = `SELECT * FROM groups;`;
+    let allGroups = await pool.query(sql);
+
+    return allGroups.rows;
+  };
+
+
   static getFollowing = async (data) => {
     let sql = `SELECT * FROM friends WHERE senderid=$1;`;
     let values = [data.userID];
@@ -123,29 +162,29 @@ class Interface {
     // console.log('result', result);
     return result;
   };
-    static createPost=async (obj)=>{
-        let sql = `INSERT INTO posts (poster_id,content) VALUES ($1,$2) RETURNING *;`;
-        let values=[obj.userID,obj.postContent]
-        let query = await pool.query(sql,values);
-        return query;
-    }
-    static getAllPosts= async ()=>{
-        let sql = `SELECT * FROM posts;`;
-        let all = await pool.query(sql);
-        return all;
-    }
-    static createComment = async (obj)=>{
-        let sql = `INSERT INTO comments (content,commenter_id,post_id) VALUES ($1,$2,$3) RETURNING *;`;
-        let values = [obj.content,obj.userID,obj.post_id]
-        let query = await pool.query(sql,values);
-        return query.rows;
-    }
-    static getAllComments = async ()=>{
-        let sql = `SELECT * FROM comments;`;
-        let all = await pool.query(sql);
-        return all
-    }
-   
+  static createPost = async (obj) => {
+    let sql = `INSERT INTO posts (poster_id,content) VALUES ($1,$2) RETURNING *;`;
+    let values = [obj.userID, obj.postContent]
+    let query = await pool.query(sql, values);
+    return query;
+  }
+  static getAllPosts = async () => {
+    let sql = `SELECT * FROM posts;`;
+    let all = await pool.query(sql);
+    return all;
+  }
+  static createComment = async (obj) => {
+    let sql = `INSERT INTO comments (content,commenter_id,post_id) VALUES ($1,$2,$3) RETURNING *;`;
+    let values = [obj.content, obj.userID, obj.post_id]
+    let query = await pool.query(sql, values);
+    return query.rows;
+  }
+  static getAllComments = async () => {
+    let sql = `SELECT * FROM comments;`;
+    let all = await pool.query(sql);
+    return all
+  }
+
 }
 
 module.exports = Interface;
