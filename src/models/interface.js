@@ -56,6 +56,28 @@ class Interface {
         let value = [true,email];
         return pool.query(sql,value);
     }
+    static createPost=async (obj)=>{
+        let sql = `INSERT INTO posts (poster_id,content) VALUES ($1,$2) RETURNING *;`;
+        let values=[obj.userID,obj.postContent]
+        let query = await pool.query(sql,values);
+        return query;
+    }
+    static getAllPosts= async ()=>{
+        let sql = `SELECT * FROM posts;`;
+        let all = await pool.query(sql);
+        return all;
+    }
+    static createComment = async (obj)=>{
+        let sql = `INSERT INTO comments (content,commenter_id,post_id) VALUES ($1,$2,$3) RETURNING *;`;
+        let values = [obj.content,obj.userID,obj.post_id]
+        let query = await pool.query(sql,values);
+        return query.rows;
+    }
+    static getAllComments = async ()=>{
+        let sql = `SELECT * FROM comments;`;
+        let all = await pool.query(sql);
+        return all
+    }
    
 }
 
