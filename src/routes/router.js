@@ -48,7 +48,7 @@ router.get('/signin', async (req, res) => {
       let sql = `SELECT * FROM users WHERE id=$1;`;
       let value = [checks.rows[0].id];
       let user = await pool.query(sql, value);
-      console.log(user.rows[0]);
+      // console.log(user.rows[0]);
       return res.send(user.rows[0]);
     }
   } catch (e) {

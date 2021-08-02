@@ -81,10 +81,10 @@ class Interface {
       let tempsql = `SELECT * FROM users WHERE id=$1;`;
       let tempvalues = [getFollowing.rows[i].receiverid];
       let tempdata = await pool.query(tempsql, tempvalues);
-      console.log('hi', tempdata.rows);
+      // console.log('hi', tempdata.rows);
       result.push(tempdata.rows[0]);
     }
-    console.log('result', result);
+    // console.log('result', result);
     return result;
   };
 
@@ -99,10 +99,10 @@ class Interface {
       let tempsql = `SELECT * FROM users WHERE id=$1;`;
       let tempvalues = [getFollowing.rows[i].receiverid];
       let tempdata = await pool.query(tempsql, tempvalues);
-      console.log('hi', tempdata.rows);
+      // console.log('hi', tempdata.rows);
       result.push(tempdata.rows[0]);
     }
-    console.log('result', result);
+    // console.log('result', result);
     return result;
   };
 
@@ -163,7 +163,7 @@ class Interface {
       let liker=await pool.query(sql);
       likers.push(liker.rows[0]);
     }
-    console.log(likers);
+    // console.log(likers);
   }
 }
 

@@ -7,10 +7,8 @@ const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(http);
 const router = require('./routes/router');
-const nodemailer = require('nodemailer');
-const { Socket } = require('dgram');
 const Interface = require('./models/interface');
-const internal = require('stream');
+
 
 app.use(cors());
 
@@ -27,9 +25,9 @@ app.use(express.json());
 app.use(router);
 io.listen(server);
 io.on('connection', (Socket) => {
-  console.log('before test');
+  // console.log('before test');
   Socket.on('test', () => {
-    console.log('Connected');
+    // console.log('Connected');
   });
 
   Socket.on('getAllUsers', async () => {
@@ -48,7 +46,7 @@ io.on('connection', (Socket) => {
       console.log(e.message);
     }
   });
-
+  
 
   //-------creating comments--------//
   Socket.on('comment', async (payload) => {
@@ -65,17 +63,28 @@ io.on('connection', (Socket) => {
 
 
   //----gettin all posts to frontEnd----//
-  Socket.on('getAllPosts', async () => {
+  Socket.on('getAllPosts', async (payload) => {
     let allPosts = await Interface.getAllPosts();
     Socket.emit('read', allPosts.rows);
   });
 
 
   //----getting all comment to frontEnd----//
-  Socket.on('getAllComments', async () => {
+  Socket.on('getAllComments', async (payload) => {
     let allComments = await Interface.getAllComments();
     Socket.emit('readComments', allComments.rows)
   })
+  
+  //------making the user profile room------//
+  // Socket.on('joinFollowRoom',async(payload)=>{
+  //   console.log(payload);
+  //   Socket.join(`${payload.reciverId}`);
+  // });
+
+  //-----user joining his own room------//
+    // Socket.on('joinMyRoom',(payload)=>{
+    //   Socket.join(`${payload.userID}`);
+    // });    
 
 
   Socket.on('addFriend', async (data) => {
@@ -101,7 +110,7 @@ io.on('connection', (Socket) => {
    await Interface.createLike(payload);
     // console.log(allLikes.rows);
     let allLikes=await Interface.gitAllLikes();
-    console.log(allLikes);
+    // console.log(allLikes);
     await Interface.getLikers(allLikes);
   });
 });
@@ -114,4 +123,5 @@ function start(port) {
 
 module.exports = {
   start,
+
 };
