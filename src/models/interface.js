@@ -99,7 +99,7 @@ class Interface {
     let query = await pool.query(sql, values);
     return query.rows[0];
   }
-  
+
 
   static getAllGroups = async (data) => {
     let sql = `SELECT * FROM groups;`;
@@ -120,28 +120,10 @@ class Interface {
       let tempsql = `SELECT * FROM users WHERE id=$1;`;
       let tempvalues = [getFollowing.rows[i].receiverid];
       let tempdata = await pool.query(tempsql, tempvalues);
-      console.log('hi', tempdata.rows);
+      // console.log('hi', tempdata.rows);
       result.push(tempdata.rows[0]);
     }
-    console.log('result', result);
-    return result;
-  };
-
-  static getFollowing = async (data) => {
-    let sql = `SELECT * FROM friends WHERE senderid=$1;`;
-    let values = [data.userID];
-    let getFollowing = await pool.query(sql, values);
-
-    let result = [];
-
-    for (let i = 0; i < getFollowing.rows.length; i++) {
-      let tempsql = `SELECT * FROM users WHERE id=$1;`;
-      let tempvalues = [getFollowing.rows[i].receiverid];
-      let tempdata = await pool.query(tempsql, tempvalues);
-      console.log('hi', tempdata.rows);
-      result.push(tempdata.rows[0]);
-    }
-    console.log('result', result);
+    // console.log('result', result);
     return result;
   };
 
@@ -168,10 +150,21 @@ class Interface {
     let query = await pool.query(sql, values);
     return query;
   }
-  static getAllPosts = async () => {
-    let sql = `SELECT * FROM posts;`;
-    let all = await pool.query(sql);
-    return all;
+  static getAllPosts = async (friends, payload) => {
+    let result = [];
+    let sql = `SELECT * FROM posts WHERE poster_id=$1;`;
+    let value = [payload.userID];
+    let all = await pool.query(sql, value);
+    result = [...result, ...all.rows];
+    for (let i = 0; i < friends.length; i++) {
+      sql = `SELECT * FROM posts WHERE poster_id=$1;`;
+      value = [friends[i].id]
+      let all = await pool.query(sql, value);
+      // console.log(all.rows);
+      result = [...result, ...all.rows]
+    }
+
+    return result;
   }
   static createComment = async (obj) => {
     let sql = `INSERT INTO comments (content,commenter_id,post_id) VALUES ($1,$2,$3) RETURNING *;`;
@@ -199,10 +192,10 @@ class Interface {
     let likers = [];
     for (let i = 0; i < likesArray.length; i++) {
       let sql = `SELECT * FROM users WHERE id=${likesArray[i].liker};`;
-      let liker=await pool.query(sql);
+      let liker = await pool.query(sql);
       likers.push(liker.rows[0]);
     }
-    console.log(likers);
+    // console.log(likers);
   }
 }
 

@@ -7,10 +7,8 @@ const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(http);
 const router = require('./routes/router');
-const nodemailer = require('nodemailer');
-const { Socket } = require('dgram');
 const Interface = require('./models/interface');
-const internal = require('stream');
+
 
 app.use(cors());
 
@@ -27,9 +25,9 @@ app.use(express.json());
 app.use(router);
 io.listen(server);
 io.on('connection', (Socket) => {
-  console.log('before test');
+  // console.log('before test');
   Socket.on('test', () => {
-    console.log('Connected');
+    // console.log('Connected');
   });
 
   Socket.on('getAllUsers', async () => {
@@ -39,16 +37,20 @@ io.on('connection', (Socket) => {
   //---------creating the posts-----------//
   Socket.on('post', async (payload) => {
     try {
-      await Interface.createPost(payload);
-      let allPosts = await Interface.getAllPosts();
-      Socket.emit('read', allPosts.rows);
+      // console.log(payload);
+      let created = await Interface.createPost(payload);
+      // console.log('payload of post',payload);
+      let friends = await Interface.getFollowing(payload);
+      let allPosts = await Interface.getAllPosts(friends,payload);
+      //------declare a new psot has been added to all client-----//
+      io.emit('newPost');
     } catch (e) {
       let payload = e;
       Socket.emit('error', payload);
       console.log(e.message);
     }
   });
-
+  
 
   //-------creating comments--------//
   Socket.on('comment', async (payload) => {
@@ -65,17 +67,35 @@ io.on('connection', (Socket) => {
 
 
   //----gettin all posts to frontEnd----//
-  Socket.on('getAllPosts', async () => {
-    let allPosts = await Interface.getAllPosts();
-    Socket.emit('read', allPosts.rows);
+  Socket.on('getAllPosts', async (payload) => {
+    let friends = await Interface.getFollowing(payload);
+      let allPosts = await Interface.getAllPosts(friends,payload);
+      console.log('before sending the posts:',allPosts);
+      Socket.emit('read', allPosts);
   });
 
 
   //----getting all comment to frontEnd----//
-  Socket.on('getAllComments', async () => {
+  Socket.on('getAllComments', async (payload) => {
     let allComments = await Interface.getAllComments();
     Socket.emit('readComments', allComments.rows)
   })
+  
+  //------making the user profile room------//
+  // Socket.on('joinFollowRoom',async(payload)=>{
+  //   console.log(payload);
+  //   Socket.join(`${payload.reciverId}`);
+  // });
+
+  // //-----user joining necessary rooms------//
+  //   Socket.on('join',async (payload)=>{
+  //     Socket.join(`${payload.userID}`);
+  //     let friends = await Interface.getFollowing(payload);
+  //     console.log(friends);
+  //     for(let i=0;i<friends.length;i++){
+  //       Socket.join(`${friends[i].id}`);
+  //     }
+  //   });    
 
 
   Socket.on('addFriend', async (data) => {
@@ -132,7 +152,7 @@ io.on('connection', (Socket) => {
    await Interface.createLike(payload);
     // console.log(allLikes.rows);
     let allLikes=await Interface.gitAllLikes();
-    console.log(allLikes);
+    // console.log(allLikes);
     await Interface.getLikers(allLikes);
   });
 });
@@ -145,4 +165,5 @@ function start(port) {
 
 module.exports = {
   start,
+
 };
