@@ -84,6 +84,15 @@ io.on('connection', (Socket) => {
     // console.log(result);
   });
 
+  Socket.on('sendMessage', async (data) => {
+    Socket.join(data.messageRoomId);
+    // console.log(data);
+    let result = await Interface.sendMessage(data);
+    let allMessages = await Interface.returnMessages(data.messageRoomId);
+    io.in(data.messageRoomId).emit('returnMessages', allMessages)
+    console.log('All Messages',allMessages);
+  });
+
   Socket.on('getFollowing', async (data) => {
     // console.log('data ', data);
     let result = await Interface.getFollowing(data);
@@ -97,6 +106,28 @@ io.on('connection', (Socket) => {
     // console.log(result);
     Socket.emit('returnFollowers', result);
   });
+
+  Socket.on('createGroup', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.createGroup(data);
+    console.log(result);
+    // Socket.emit('returnFollowers', result);
+  });
+
+  Socket.on('getAllGroups', async () => {
+    // console.log('data ', data);
+    let result = await Interface.getAllGroups();
+    console.log(result);
+    Socket.emit('returnAllGroups', result);
+  });
+
+  Socket.on('joinGroup', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getAllGroups();
+    console.log(result);
+    Socket.emit('returnAllGroups', result);
+  });
+  
   Socket.on('like', async (payload) => {
    await Interface.createLike(payload);
     // console.log(allLikes.rows);
