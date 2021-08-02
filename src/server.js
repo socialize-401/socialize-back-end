@@ -6,7 +6,6 @@ const http = require('http');
 const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(http);
-const uuid = require('uuid').v4;
 const router = require('./routes/router');
 const nodemailer = require('nodemailer');
 const { Socket } = require('dgram');
@@ -36,6 +35,47 @@ io.on('connection', (Socket) => {
     let result = await Interface.getAllUsers();
     Socket.emit('returnAllUsers', result);
   });
+  //---------creating the posts-----------//
+  Socket.on('post', async (payload) => {
+    try {
+      await Interface.createPost(payload);
+      let allPosts = await Interface.getAllPosts();
+      Socket.emit('read', allPosts.rows);
+    } catch (e) {
+      let payload = e;
+      Socket.emit('error', payload);
+      console.log(e.message);
+    }
+  });
+
+
+  //-------creating comments--------//
+  Socket.on('comment', async (payload) => {
+    try {
+      await Interface.createComment(payload);
+      let allComments = await Interface.getAllComments();
+      Socket.emit('readComments', allComments.rows);
+    } catch (e) {
+      let payload = e;
+      Socket.emit('error', payload);
+      console.log(e.message);
+    }
+  });
+
+
+  //----gettin all posts to frontEnd----//
+  Socket.on('getAllPosts', async () => {
+    let allPosts = await Interface.getAllPosts();
+    Socket.emit('read', allPosts.rows);
+  });
+
+
+  //----getting all comment to frontEnd----//
+  Socket.on('getAllComments', async () => {
+    let allComments = await Interface.getAllComments();
+    Socket.emit('readComments', allComments.rows)
+  })
+
 
   Socket.on('addFriend', async (data) => {
     // console.log(data);

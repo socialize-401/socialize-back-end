@@ -117,12 +117,35 @@ class Interface {
       let tempsql = `SELECT * FROM users WHERE id=$1;`;
       let tempvalues = [getFollowers.rows[i].senderid];
       let tempdata = await pool.query(tempsql, tempvalues);
-      console.log('hi', tempdata.rows);
+      // console.log('hi', tempdata.rows);
       result.push(tempdata.rows[0]);
     }
-    console.log('result', result);
+    // console.log('result', result);
     return result;
   };
+    static createPost=async (obj)=>{
+        let sql = `INSERT INTO posts (poster_id,content) VALUES ($1,$2) RETURNING *;`;
+        let values=[obj.userID,obj.postContent]
+        let query = await pool.query(sql,values);
+        return query;
+    }
+    static getAllPosts= async ()=>{
+        let sql = `SELECT * FROM posts;`;
+        let all = await pool.query(sql);
+        return all;
+    }
+    static createComment = async (obj)=>{
+        let sql = `INSERT INTO comments (content,commenter_id,post_id) VALUES ($1,$2,$3) RETURNING *;`;
+        let values = [obj.content,obj.userID,obj.post_id]
+        let query = await pool.query(sql,values);
+        return query.rows;
+    }
+    static getAllComments = async ()=>{
+        let sql = `SELECT * FROM comments;`;
+        let all = await pool.query(sql);
+        return all
+    }
+   
 }
 
 module.exports = Interface;
