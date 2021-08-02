@@ -10,6 +10,7 @@ const router = require('./routes/router');
 const nodemailer = require('nodemailer');
 const { Socket } = require('dgram');
 const Interface = require('./models/interface');
+const internal = require('stream');
 
 app.use(cors());
 
@@ -125,6 +126,14 @@ io.on('connection', (Socket) => {
     let result = await Interface.getAllGroups();
     console.log(result);
     Socket.emit('returnAllGroups', result);
+  });
+  
+  Socket.on('like', async (payload) => {
+   await Interface.createLike(payload);
+    // console.log(allLikes.rows);
+    let allLikes=await Interface.gitAllLikes();
+    console.log(allLikes);
+    await Interface.getLikers(allLikes);
   });
 });
 

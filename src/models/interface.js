@@ -184,7 +184,26 @@ class Interface {
     let all = await pool.query(sql);
     return all
   }
-
+  static createLike = async (obj) => {
+    let sql = `INSERT INTO likes (liker,post_id) VALUES ($1,$2) RETURNING *;`;
+    let values = [obj.userID, obj.post_id];
+    let all = await pool.query(sql, values);
+    // return all;
+  }
+  static gitAllLikes = async () => {
+    let sql = `SELECT * FROM likes;`;
+    let allLikes = await pool.query(sql);
+    return allLikes.rows;
+  }
+  static getLikers = async (likesArray) => {
+    let likers = [];
+    for (let i = 0; i < likesArray.length; i++) {
+      let sql = `SELECT * FROM users WHERE id=${likesArray[i].liker};`;
+      let liker=await pool.query(sql);
+      likers.push(liker.rows[0]);
+    }
+    console.log(likers);
+  }
 }
 
 module.exports = Interface;
