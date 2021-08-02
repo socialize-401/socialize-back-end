@@ -123,29 +123,48 @@ class Interface {
     // console.log('result', result);
     return result;
   };
-    static createPost=async (obj)=>{
-        let sql = `INSERT INTO posts (poster_id,content) VALUES ($1,$2) RETURNING *;`;
-        let values=[obj.userID,obj.postContent]
-        let query = await pool.query(sql,values);
-        return query;
+  static createPost = async (obj) => {
+    let sql = `INSERT INTO posts (poster_id,content) VALUES ($1,$2) RETURNING *;`;
+    let values = [obj.userID, obj.postContent]
+    let query = await pool.query(sql, values);
+    return query;
+  }
+  static getAllPosts = async () => {
+    let sql = `SELECT * FROM posts;`;
+    let all = await pool.query(sql);
+    return all;
+  }
+  static createComment = async (obj) => {
+    let sql = `INSERT INTO comments (content,commenter_id,post_id) VALUES ($1,$2,$3) RETURNING *;`;
+    let values = [obj.content, obj.userID, obj.post_id]
+    let query = await pool.query(sql, values);
+    return query.rows;
+  }
+  static getAllComments = async () => {
+    let sql = `SELECT * FROM comments;`;
+    let all = await pool.query(sql);
+    return all
+  }
+  static createLike = async (obj) => {
+    let sql = `INSERT INTO likes (liker,post_id) VALUES ($1,$2) RETURNING *;`;
+    let values = [obj.userID, obj.post_id];
+    let all = await pool.query(sql, values);
+    // return all;
+  }
+  static gitAllLikes = async () => {
+    let sql = `SELECT * FROM likes;`;
+    let allLikes = await pool.query(sql);
+    return allLikes.rows;
+  }
+  static getLikers = async (likesArray) => {
+    let likers = [];
+    for (let i = 0; i < likesArray.length; i++) {
+      let sql = `SELECT * FROM users WHERE id=${likesArray[i].liker};`;
+      let liker=await pool.query(sql);
+      likers.push(liker.rows[0]);
     }
-    static getAllPosts= async ()=>{
-        let sql = `SELECT * FROM posts;`;
-        let all = await pool.query(sql);
-        return all;
-    }
-    static createComment = async (obj)=>{
-        let sql = `INSERT INTO comments (content,commenter_id,post_id) VALUES ($1,$2,$3) RETURNING *;`;
-        let values = [obj.content,obj.userID,obj.post_id]
-        let query = await pool.query(sql,values);
-        return query.rows;
-    }
-    static getAllComments = async ()=>{
-        let sql = `SELECT * FROM comments;`;
-        let all = await pool.query(sql);
-        return all
-    }
-   
+    console.log(likers);
+  }
 }
 
 module.exports = Interface;
