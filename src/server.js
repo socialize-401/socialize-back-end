@@ -36,10 +36,12 @@ io.on('connection', (Socket) => {
     let result = await Interface.getAllUsers();
     Socket.emit('returnAllUsers', result);
   });
+
   //---------creating the posts-----------//
   Socket.on('post', async (payload) => {
     try {
       await Interface.createPost(payload);
+      
       let allPosts = await Interface.getAllPosts();
       Socket.emit('read', allPosts.rows);
     } catch (e) {
@@ -48,7 +50,6 @@ io.on('connection', (Socket) => {
       console.log(e.message);
     }
   });
-
 
   //-------creating comments--------//
   Socket.on('comment', async (payload) => {
@@ -63,20 +64,17 @@ io.on('connection', (Socket) => {
     }
   });
 
-
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async () => {
     let allPosts = await Interface.getAllPosts();
     Socket.emit('read', allPosts.rows);
   });
 
-
   //----getting all comment to frontEnd----//
   Socket.on('getAllComments', async () => {
     let allComments = await Interface.getAllComments();
-    Socket.emit('readComments', allComments.rows)
-  })
-
+    Socket.emit('readComments', allComments.rows);
+  });
 
   Socket.on('addFriend', async (data) => {
     // console.log(data);
@@ -89,8 +87,8 @@ io.on('connection', (Socket) => {
     // console.log(data);
     let result = await Interface.sendMessage(data);
     let allMessages = await Interface.returnMessages(data.messageRoomId);
-    io.in(data.messageRoomId).emit('returnMessages', allMessages)
-    console.log('All Messages',allMessages);
+    io.in(data.messageRoomId).emit('returnMessages', allMessages);
+    // console.log('All Messages', allMessages);
   });
 
   Socket.on('getFollowing', async (data) => {
@@ -110,29 +108,45 @@ io.on('connection', (Socket) => {
   Socket.on('createGroup', async (data) => {
     // console.log('data ', data);
     let result = await Interface.createGroup(data);
-    console.log(result);
-    // Socket.emit('returnFollowers', result);
+    // console.log(result);
   });
 
   Socket.on('getAllGroups', async () => {
     // console.log('data ', data);
     let result = await Interface.getAllGroups();
-    console.log(result);
+    // console.log(result);
     Socket.emit('returnAllGroups', result);
+  });
+
+  Socket.on('getGroupRequests', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getGroupRequests(data);
+    // console.log(result);
+    Socket.emit('returnGroupRequests', result);
   });
 
   Socket.on('joinGroup', async (data) => {
     // console.log('data ', data);
-    let result = await Interface.getAllGroups();
-    console.log(result);
-    Socket.emit('returnAllGroups', result);
+    let result = await Interface.joinGroup(data);
+    // console.log(result);
   });
-  
+
+  Socket.on('acceptJoinGroup', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.acceptJoinGroup(data);
+
+    Socket.join(data.groupId);
+    // let allMessages = await Interface.returnMessages(data.messageRoomId);
+    // io.in(data.groupId).emit('returnPosts', allMessages);
+
+    // console.log(result);
+  });
+
   Socket.on('like', async (payload) => {
-   await Interface.createLike(payload);
+    await Interface.createLike(payload);
     // console.log(allLikes.rows);
-    let allLikes=await Interface.gitAllLikes();
-    console.log(allLikes);
+    let allLikes = await Interface.gitAllLikes();
+    // console.log(allLikes);
     await Interface.getLikers(allLikes);
   });
 });

@@ -80,7 +80,14 @@ class Interface {
     let receiverName = await pool.query(receiverSql, receiverValues);
 
     let sql = `INSERT INTO messages (receiver,sender,content,room,receiver_name,sender_name) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;`;
-    let values = [data.receiverId, data.senderId, data.messageContent, data.messageRoomId, receiverName.rows[0].firstname, senderName.rows[0].firstname];
+    let values = [
+      data.receiverId,
+      data.senderId,
+      data.messageContent,
+      data.messageRoomId,
+      receiverName.rows[0].firstname,
+      senderName.rows[0].firstname,
+    ];
     let newMessage = await pool.query(sql, values);
     return newMessage.rows[0];
   };
@@ -95,11 +102,10 @@ class Interface {
 
   static createGroup = async (obj) => {
     let sql = `INSERT INTO groups (group_name,owner_id,group_description) VALUES ($1,$2,$3) RETURNING *;`;
-    let values = [obj.group_name, obj.group_owner, obj.group_description]
+    let values = [obj.group_name, obj.group_owner, obj.group_description];
     let query = await pool.query(sql, values);
     return query.rows[0];
-  }
-  
+  };
 
   static getAllGroups = async (data) => {
     let sql = `SELECT * FROM groups;`;
@@ -108,6 +114,57 @@ class Interface {
     return allGroups.rows;
   };
 
+  static joinGroup = async (data) => {
+    let sql = `INSERT INTO user_groups (group_id,member_id,owner_id) VALUES ($1,$2,$3) RETURNING *;`;
+    let values = [data.groupId, data.senderId, data.owner_id];
+    let joinedGroup = await pool.query(sql, values);
+
+    return joinedGroup.rows[0];
+  };
+
+  static getGroupRequests = async (data) => {
+    let sql = `SELECT * FROM user_groups WHERE owner_id=$1 AND approval_status=$2;`;
+    let values = [data.userID, false];
+    let groupRequests = await pool.query(sql, values);
+
+    console.log(groupRequests.rows);
+
+    let groupsNames = [];
+    for (let i = 0; i < groupRequests.rows.length; i++) {
+      let tempsql = `SELECT * FROM groups WHERE id=$1;`;
+      let tempvalues = [groupRequests.rows[i].group_id];
+      let tempdata = await pool.query(tempsql, tempvalues);
+      console.log('hi group name', tempdata.rows);
+      groupsNames.push(tempdata.rows[0].group_name);
+    }
+
+    let membersNames = [];
+    for (let i = 0; i < groupRequests.rows.length; i++) {
+      let tempsql1 = `SELECT * FROM users WHERE id=$1;`;
+      let tempvalues1 = [groupRequests.rows[i].member_id];
+      let tempdata1 = await pool.query(tempsql1, tempvalues1);
+      console.log('hi group name', tempdata1.rows);
+      membersNames.push(
+        `${tempdata1.rows[0].firstname} ${tempdata1.rows[0].lastname} `
+      );
+    }
+
+    let retrnedData = {
+      data: groupRequests.rows,
+      groupsNames: groupsNames,
+      membersNames: membersNames,
+    };
+
+    return retrnedData;
+  };
+
+  static acceptJoinGroup = async (data) => {
+    let sql = `UPDATE user_groups SET approval_status=$1 WHERE member_id=$2 AND group_id=$3 RETURNING *;`;
+    let value = [true, data.memberId, data.groupId];
+
+    let result = pool.query(sql, value);
+    return result.rows[0];
+  };
 
   static getFollowing = async (data) => {
     let sql = `SELECT * FROM friends WHERE senderid=$1;`;
@@ -138,10 +195,10 @@ class Interface {
       let tempsql = `SELECT * FROM users WHERE id=$1;`;
       let tempvalues = [getFollowing.rows[i].receiverid];
       let tempdata = await pool.query(tempsql, tempvalues);
-      console.log('hi', tempdata.rows);
+      // console.log('hi', tempdata.rows);
       result.push(tempdata.rows[0]);
     }
-    console.log('result', result);
+    // console.log('result', result);
     return result;
   };
 
@@ -162,48 +219,49 @@ class Interface {
     // console.log('result', result);
     return result;
   };
+  
   static createPost = async (obj) => {
     let sql = `INSERT INTO posts (poster_id,content) VALUES ($1,$2) RETURNING *;`;
-    let values = [obj.userID, obj.postContent]
+    let values = [obj.userID, obj.postContent];
     let query = await pool.query(sql, values);
     return query;
-  }
+  };
   static getAllPosts = async () => {
     let sql = `SELECT * FROM posts;`;
     let all = await pool.query(sql);
     return all;
-  }
+  };
   static createComment = async (obj) => {
     let sql = `INSERT INTO comments (content,commenter_id,post_id) VALUES ($1,$2,$3) RETURNING *;`;
-    let values = [obj.content, obj.userID, obj.post_id]
+    let values = [obj.content, obj.userID, obj.post_id];
     let query = await pool.query(sql, values);
     return query.rows;
-  }
+  };
   static getAllComments = async () => {
     let sql = `SELECT * FROM comments;`;
     let all = await pool.query(sql);
-    return all
-  }
+    return all;
+  };
   static createLike = async (obj) => {
     let sql = `INSERT INTO likes (liker,post_id) VALUES ($1,$2) RETURNING *;`;
     let values = [obj.userID, obj.post_id];
     let all = await pool.query(sql, values);
     // return all;
-  }
+  };
   static gitAllLikes = async () => {
     let sql = `SELECT * FROM likes;`;
     let allLikes = await pool.query(sql);
     return allLikes.rows;
-  }
+  };
   static getLikers = async (likesArray) => {
     let likers = [];
     for (let i = 0; i < likesArray.length; i++) {
       let sql = `SELECT * FROM users WHERE id=${likesArray[i].liker};`;
-      let liker=await pool.query(sql);
+      let liker = await pool.query(sql);
       likers.push(liker.rows[0]);
     }
     console.log(likers);
-  }
+  };
 }
 
 module.exports = Interface;

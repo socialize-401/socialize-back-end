@@ -88,6 +88,7 @@ CREATE TABLE user_groups(
     id SERIAL PRIMARY KEY,
     group_id int NOT NULL ,
     member_id int NOT NULL ,
+    owner_id int NOT NULL ,
     approval_status boolean DEFAULT false,
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
     FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE CASCADE
