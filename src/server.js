@@ -7,6 +7,8 @@ const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(http);
 const router = require('./routes/router');
+const nodemailer = require('nodemailer');
+const { Socket } = require('dgram');
 const Interface = require('./models/interface');
 
 app.use(cors());
@@ -27,6 +29,11 @@ io.on('connection', (Socket) => {
   console.log('before test');
   Socket.on('test', () => {
     console.log('Connected');
+  });
+
+  Socket.on('getAllUsers', async () => {
+    let result = await Interface.getAllUsers();
+    Socket.emit('returnAllUsers', result);
   });
   //---------creating the posts-----------//
   Socket.on('post', async (payload) => {
@@ -69,9 +76,27 @@ io.on('connection', (Socket) => {
     Socket.emit('readComments', allComments.rows)
   })
 
+
+  Socket.on('addFriend', async (data) => {
+    // console.log(data);
+    let result = await Interface.addFriend(data);
+    // console.log(result);
+  });
+
+  Socket.on('getFollowing', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getFollowing(data);
+    // console.log(result);
+    Socket.emit('returnFollowing', result);
+  });
+
+  Socket.on('getFollowers', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getFollowers(data);
+    // console.log(result);
+    Socket.emit('returnFollowers', result);
+  });
 });
-
-
 
 function start(port) {
   server.listen(port, () => {
