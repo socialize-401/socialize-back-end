@@ -201,18 +201,22 @@ class Interface {
   };
 
   static getGroupMembers = async (data) => {
-    let sql = `SELECT * FROM user_groups WHERE group_id=$1 AND approval_status=$2;`;
+    
+    // let sql = `SELECT * FROM user_groups WHERE group_id=$1 AND approval_status=$2;`;
+    // let values = [data.groupID, true];
+    // let groupData = await pool.query(sql, values);
+
+    // let result = [];
+    // for (let i = 0; i < groupData.rows.length; i++) {
+    //   let tempsql = `SELECT * FROM users WHERE id=$1;`;
+    //   let tempvalues = [groupData.rows[i].member_id];
+    //   let tempdata = await pool.query(tempsql, tempvalues);
+    //   result.push(tempdata.rows[0]);
+    // }
+    let sql=`SELECT users.firstname,users.lastname from users INNER JOIN user_groups ON user_groups.member_id=users.id WHERE group_id=$1 AND approval_status=$2;`
     let values = [data.groupID, true];
     let groupData = await pool.query(sql, values);
-
-    let result = [];
-    for (let i = 0; i < groupData.rows.length; i++) {
-      let tempsql = `SELECT * FROM users WHERE id=$1;`;
-      let tempvalues = [groupData.rows[i].member_id];
-      let tempdata = await pool.query(tempsql, tempvalues);
-      result.push(tempdata.rows[0]);
-    }
-    return result;
+    return groupData.rows;
   };
 
   static acceptJoinGroup = async (data) => {
@@ -310,17 +314,54 @@ class Interface {
     let query = await pool.query(sql, values);
     return query.rows;
   };
+
+  static createGroupComment = async (obj) => {
+    let sequel = `SELECT * FROM users WHERE id=$1;`;
+    let tempVal = [obj.userId];
+    let readQuery = await pool.query(sequel,tempVal)
+    let commenterName = `${readQuery.rows[0].firstname} ${readQuery.rows[0].lastname}`;
+
+    let sql = `INSERT INTO g_comments (content,g_commenter_id,g_post_id,g_commenter_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
+    let values = [obj.content, obj.userId, obj.postId, commenterName];
+    let query = await pool.query(sql, values);
+    return query.rows[0];
+  };
+
+  
   static getAllComments = async () => {
     let sql = `SELECT * FROM comments;`;
     let all = await pool.query(sql);
     return all;
   };
+
+  static getAllGroupComments = async () => {
+    let sql = `SELECT * FROM g_comments;`;
+    let all = await pool.query(sql);
+    return all.rows;
+  };
+
+
   static createLike = async (obj) => {
     let sql = `INSERT INTO likes (liker,post_id) VALUES ($1,$2) RETURNING *;`;
     let values = [obj.userID, obj.post_id];
     let all = await pool.query(sql, values);
     // return all;
   };
+
+  static createGroupPostLike = async (obj) => {
+    let sql = `INSERT INTO g_likes (g_liker,g_post_id) VALUES ($1,$2) RETURNING *;`;
+    let values = [obj.userId, obj.postId];
+    let likes = await pool.query(sql, values);
+    return likes.rows;
+  };
+
+  static getAllGroupLikes = async (obj) => {
+    let sql = `SELECT * FROM g_likes WHERE g_post_id=$1;`;
+    let values=[obj.postId]
+    let allLikes = await pool.query(sql,values);
+    return allLikes.rows;
+  };
+
   static gitAllLikes = async () => {
     let sql = `SELECT * FROM likes;`;
     let allLikes = await pool.query(sql);
