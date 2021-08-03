@@ -9,7 +9,6 @@ const io = require('socket.io')(http);
 const router = require('./routes/router');
 const Interface = require('./models/interface');
 
-
 app.use(cors());
 
 // app.all('http://localhost:3000', function (req, res, next) {
@@ -42,7 +41,7 @@ io.on('connection', (Socket) => {
       let created = await Interface.createPost(payload);
       // console.log('payload of post',payload);
       let friends = await Interface.getFollowing(payload);
-      let allPosts = await Interface.getAllPosts(friends,payload);
+      let allPosts = await Interface.getAllPosts(friends, payload);
       //------declare a new psot has been added to all client-----//
       io.emit('newPost');
     } catch (e) {
@@ -51,7 +50,6 @@ io.on('connection', (Socket) => {
       console.log(e.message);
     }
   });
-  
 
   //-------creating comments--------//
   Socket.on('comment', async (payload) => {
@@ -69,17 +67,17 @@ io.on('connection', (Socket) => {
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async (payload) => {
     let friends = await Interface.getFollowing(payload);
-      let allPosts = await Interface.getAllPosts(friends,payload);
-      console.log('before sending the posts:',allPosts);
-      Socket.emit('read', allPosts);
+    let allPosts = await Interface.getAllPosts(friends, payload);
+    console.log('before sending the posts:', allPosts);
+    Socket.emit('read', allPosts);
   });
 
   //----getting all comment to frontEnd----//
   Socket.on('getAllComments', async (payload) => {
     let allComments = await Interface.getAllComments();
-    Socket.emit('readComments', allComments.rows)
-  })
-  
+    Socket.emit('readComments', allComments.rows);
+  });
+
   //------making the user profile room------//
   // Socket.on('joinFollowRoom',async(payload)=>{
   //   console.log(payload);
@@ -94,8 +92,7 @@ io.on('connection', (Socket) => {
   //     for(let i=0;i<friends.length;i++){
   //       Socket.join(`${friends[i].id}`);
   //     }
-  //   });    
-
+  //   });
 
   Socket.on('addFriend', async (data) => {
     // console.log(data);
@@ -156,17 +153,31 @@ io.on('connection', (Socket) => {
     // console.log('data ', data);
     let result = await Interface.acceptJoinGroup(data);
 
-    Socket.join(data.groupId);
     // let allMessages = await Interface.returnMessages(data.messageRoomId);
     // io.in(data.groupId).emit('returnPosts', allMessages);
 
     // console.log(result);
   });
 
+  Socket.on('getUsergroups', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getUsergroups(data);
+    console.log(result);
+    Socket.emit('returnUsergroups', result);
+  });
+
+  Socket.on('viewGroup', async (data) => {
+    // console.log('data ', data);
+    Socket.join(`group-${data.groupId}`);
+    let result = await Interface.viewGroup(data);
+    console.log(result.group_name);
+    Socket.emit('returnCurrentGroupContent', result);
+  });
+
   Socket.on('like', async (payload) => {
     await Interface.createLike(payload);
     // console.log(allLikes.rows);
-    let allLikes=await Interface.gitAllLikes();
+    let allLikes = await Interface.gitAllLikes();
     // console.log(allLikes);
     await Interface.getLikers(allLikes);
   });
@@ -180,5 +191,4 @@ function start(port) {
 
 module.exports = {
   start,
-
 };
