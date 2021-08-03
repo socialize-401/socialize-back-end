@@ -78,6 +78,22 @@ io.on('connection', (Socket) => {
     }
   });
 
+
+  Socket.on('groupComment', async (payload) => {
+
+    let newComment = await Interface.createGroupComment(payload);
+    // console.log(newComment);
+    let allGroupComments = await Interface.getAllGroupComments();
+    Socket.emit('returnGroupComments', allGroupComments);
+
+  });
+
+  Socket.on('getAllGroupComments', async () => {
+    let allComments = await Interface.getAllGroupComments();
+    Socket.emit('returnGroupComments', allComments);
+    // console.log('test',allComments);
+  });
+
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async (payload) => {
     // console.log('giting following 123');
@@ -193,8 +209,16 @@ io.on('connection', (Socket) => {
   Socket.on('getGroupMembers', async (data) => {
     // console.log('data ', data);
     let result = await Interface.getGroupMembers(data);
-    // console.log(result);
+    console.log('ahmad result', result);
     Socket.emit('returnGroupMembers', result);
+  });
+
+  Socket.on('groupPostLike', async (payload) => {
+    let newLikes = await Interface.createGroupPostLike(payload);
+    // console.log(allLikes);
+    let allLikes = await Interface.getAllGroupLikes(payload);
+    // console.log(allLikes);
+    Socket.emit('returnGroupLikes', allLikes);
   });
 
   Socket.on('like', async (payload) => {

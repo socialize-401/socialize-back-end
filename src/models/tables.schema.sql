@@ -106,6 +106,7 @@ CREATE TABLE G_posts(
     G_groups_id int NOT NULL,
     poster_name text,
     send_time timestamp NOT NULL DEFAULT NOW(),
+    likes int DEFAULT 0,
     FOREIGN KEY (G_member_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (G_groups_id) REFERENCES groups(id) ON DELETE CASCADE
 );
