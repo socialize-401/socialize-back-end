@@ -203,7 +203,7 @@ class Interface {
     // console.log('result', result);
     return result;
   };
-  
+
   static createPost = async (obj) => {
     let sql = `INSERT INTO posts (poster_id,content) VALUES ($1,$2) RETURNING *;`;
     let values = [obj.userID, obj.postContent];

@@ -32,7 +32,7 @@ io.on('connection', (Socket) => {
 
   Socket.on('getAllUsers', async () => {
     let result = await Interface.getAllUsers();
-    Socket.emit('returnAllUsers', result);
+    Socket.broadcast.emit('returnAllUsers', result);
   });
 
   //---------creating the posts-----------//
@@ -42,7 +42,7 @@ io.on('connection', (Socket) => {
       let created = await Interface.createPost(payload);
       // console.log('payload of post',payload);
       let friends = await Interface.getFollowing(payload);
-      let allPosts = await Interface.getAllPosts(friends,payload);
+      let allPosts = await Interface.getAllPosts(friends, payload);
       //------declare a new psot has been added to all client-----//
       io.emit('newPost');
     } catch (e) {
@@ -51,7 +51,7 @@ io.on('connection', (Socket) => {
       console.log(e.message);
     }
   });
-  
+
 
   //-------creating comments--------//
   Socket.on('comment', async (payload) => {
@@ -68,18 +68,23 @@ io.on('connection', (Socket) => {
 
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async (payload) => {
+    console.log('giting following 123');
     let friends = await Interface.getFollowing(payload);
-      let allPosts = await Interface.getAllPosts(friends,payload);
-      console.log('before sending the posts:',allPosts);
-      Socket.emit('read', allPosts);
+    console.log('friends 123', friends);
+    let allPosts = await Interface.getAllPosts(friends, payload);
+    console.log('before sending the posts:', allPosts);
+    Socket.emit('read', allPosts);
   });
 
   //----getting all comment to frontEnd----//
   Socket.on('getAllComments', async (payload) => {
     let allComments = await Interface.getAllComments();
     Socket.emit('readComments', allComments.rows)
-  })
-  
+  });
+  // Socket.on('join',()=>{
+  //   Socket.emit('newuser');
+  // })
+
   //------making the user profile room------//
   // Socket.on('joinFollowRoom',async(payload)=>{
   //   console.log(payload);
@@ -100,6 +105,7 @@ io.on('connection', (Socket) => {
   Socket.on('addFriend', async (data) => {
     // console.log(data);
     let result = await Interface.addFriend(data);
+    Socket.emit('friendAdded');
     // console.log(result);
   });
 
@@ -115,7 +121,7 @@ io.on('connection', (Socket) => {
   Socket.on('getFollowing', async (data) => {
     // console.log('data ', data);
     let result = await Interface.getFollowing(data);
-    // console.log(result);
+    // console.log('following');
     Socket.emit('returnFollowing', result);
   });
 
@@ -166,7 +172,7 @@ io.on('connection', (Socket) => {
   Socket.on('like', async (payload) => {
     await Interface.createLike(payload);
     // console.log(allLikes.rows);
-    let allLikes=await Interface.gitAllLikes();
+    let allLikes = await Interface.gitAllLikes();
     // console.log(allLikes);
     await Interface.getLikers(allLikes);
   });
