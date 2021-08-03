@@ -51,6 +51,20 @@ io.on('connection', (Socket) => {
     }
   });
 
+  Socket.on('groupPost', async (payload) => {
+    let createdPost = await Interface.createGroupPost(payload);
+    console.log('createdPost', createdPost);
+    let allGroupPosts = await Interface.allGroupPosts(payload);
+    // console.log('allGroupPosts', allGroupPosts);
+    Socket.emit('returnNewGroupPost', allGroupPosts);
+  });
+
+  Socket.on('getAllGroupPosts', async (payload) => {
+    let allGroupPosts = await Interface.allGroupPosts(payload);
+    // console.log('allGroupPosts', allGroupPosts);
+    Socket.emit('returnNewGroupPost', allGroupPosts);
+  });
+
   //-------creating comments--------//
   Socket.on('comment', async (payload) => {
     try {
@@ -66,9 +80,9 @@ io.on('connection', (Socket) => {
 
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async (payload) => {
-    console.log('giting following 123');
+    // console.log('giting following 123');
     let friends = await Interface.getFollowing(payload);
-    console.log('friends 123', friends);
+    // console.log('friends 123', friends);
     let allPosts = await Interface.getAllPosts(friends, payload);
     console.log('before sending the posts:', allPosts);
     Socket.emit('read', allPosts);
@@ -132,11 +146,10 @@ io.on('connection', (Socket) => {
     // console.log(result);
   });
 
-  Socket.on('getAllGroups', async () => {
-    // console.log('data ', data);
-    let result = await Interface.getAllGroups();
+  Socket.on('getAllGroups', async (data) => {
+    let result = await Interface.getAllGroups(data);
     // console.log(result);
-    Socket.emit('returnAllGroups', result);
+    io.emit('returnAllGroups', result);
   });
 
   Socket.on('getGroupRequests', async (data) => {
@@ -175,6 +188,13 @@ io.on('connection', (Socket) => {
     let result = await Interface.viewGroup(data);
     console.log(result.group_name);
     Socket.emit('returnCurrentGroupContent', result);
+  });
+
+  Socket.on('getGroupMembers', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getGroupMembers(data);
+    // console.log(result);
+    Socket.emit('returnGroupMembers', result);
   });
 
   Socket.on('like', async (payload) => {
