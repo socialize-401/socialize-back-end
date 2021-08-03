@@ -9,7 +9,6 @@ const io = require('socket.io')(http);
 const router = require('./routes/router');
 const Interface = require('./models/interface');
 
-
 app.use(cors());
 
 // app.all('http://localhost:3000', function (req, res, next) {
@@ -52,7 +51,6 @@ io.on('connection', (Socket) => {
     }
   });
 
-
   //-------creating comments--------//
   Socket.on('comment', async (payload) => {
     try {
@@ -79,11 +77,8 @@ io.on('connection', (Socket) => {
   //----getting all comment to frontEnd----//
   Socket.on('getAllComments', async (payload) => {
     let allComments = await Interface.getAllComments();
-    Socket.emit('readComments', allComments.rows)
+    Socket.emit('readComments', allComments.rows);
   });
-  // Socket.on('join',()=>{
-  //   Socket.emit('newuser');
-  // })
 
   //------making the user profile room------//
   // Socket.on('joinFollowRoom',async(payload)=>{
@@ -99,8 +94,7 @@ io.on('connection', (Socket) => {
   //     for(let i=0;i<friends.length;i++){
   //       Socket.join(`${friends[i].id}`);
   //     }
-  //   });    
-
+  //   });
 
   Socket.on('addFriend', async (data) => {
     // console.log(data);
@@ -162,11 +156,25 @@ io.on('connection', (Socket) => {
     // console.log('data ', data);
     let result = await Interface.acceptJoinGroup(data);
 
-    Socket.join(data.groupId);
     // let allMessages = await Interface.returnMessages(data.messageRoomId);
     // io.in(data.groupId).emit('returnPosts', allMessages);
 
     // console.log(result);
+  });
+
+  Socket.on('getUsergroups', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getUsergroups(data);
+    console.log(result);
+    Socket.emit('returnUsergroups', result);
+  });
+
+  Socket.on('viewGroup', async (data) => {
+    // console.log('data ', data);
+    Socket.join(`group-${data.groupId}`);
+    let result = await Interface.viewGroup(data);
+    console.log(result.group_name);
+    Socket.emit('returnCurrentGroupContent', result);
   });
 
   Socket.on('like', async (payload) => {
@@ -186,5 +194,4 @@ function start(port) {
 
 module.exports = {
   start,
-
 };
