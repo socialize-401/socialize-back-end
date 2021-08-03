@@ -32,7 +32,7 @@ io.on('connection', (Socket) => {
 
   Socket.on('getAllUsers', async () => {
     let result = await Interface.getAllUsers();
-    Socket.broadcast.emit('returnAllUsers', result);
+    Socket.emit('returnAllUsers', result);
   });
 
   //---------creating the posts-----------//
