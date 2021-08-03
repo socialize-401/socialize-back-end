@@ -66,11 +66,11 @@ io.on('connection', (Socket) => {
 
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async (payload) => {
-    console.log('giting following 123');
+    // console.log('giting following 123');
     let friends = await Interface.getFollowing(payload);
-    console.log('friends 123', friends);
+    // console.log('friends 123', friends);
     let allPosts = await Interface.getAllPosts(friends, payload);
-    console.log('before sending the posts:', allPosts);
+    // console.log('before sending the posts:', allPosts);
     Socket.emit('read', allPosts);
   });
 
@@ -165,7 +165,7 @@ io.on('connection', (Socket) => {
   Socket.on('getUsergroups', async (data) => {
     // console.log('data ', data);
     let result = await Interface.getUsergroups(data);
-    console.log(result);
+    // console.log(result);
     Socket.emit('returnUsergroups', result);
   });
 
@@ -173,7 +173,7 @@ io.on('connection', (Socket) => {
     // console.log('data ', data);
     Socket.join(`group-${data.groupId}`);
     let result = await Interface.viewGroup(data);
-    console.log(result.group_name);
+    // console.log(result.group_name);
     Socket.emit('returnCurrentGroupContent', result);
   });
 
@@ -183,6 +183,27 @@ io.on('connection', (Socket) => {
     let allLikes = await Interface.gitAllLikes();
     // console.log(allLikes);
     await Interface.getLikers(allLikes);
+  });
+  //----getting target info and sending them to FE----//
+  Socket.on('getTargetInfo',async(id)=>{
+    let target = await Interface.getTargetInfo(id);
+    // console.log(target.rows);
+    Socket.emit('targetInfo',target.rows);
+  });
+  //----getting target following---//
+  Socket.on('getTargetFollowing',async(payload)=>{
+    let following = await Interface.getFollowing({userID:payload});
+    Socket.emit('targetFollowing',following);
+  });
+  //-----getting target followers---//
+  Socket.on('getTargetFollowers',async(payload)=>{
+    let followers = await Interface.getFollowers({userID:payload});
+    Socket.emit('targetFollowers',followers);
+  });
+  //-----getting target posts----//
+  Socket.on('getTargetPosts',async(id)=>{
+    let targetPosts = await Interface.getTargetPosts(id);
+    Socket.emit('targetPosts',targetPosts.rows);
   });
 });
 
