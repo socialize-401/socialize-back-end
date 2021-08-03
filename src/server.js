@@ -31,7 +31,7 @@ io.on('connection', (Socket) => {
 
   Socket.on('getAllUsers', async () => {
     let result = await Interface.getAllUsers();
-    Socket.emit('returnAllUsers', result);
+    Socket.broadcast.emit('returnAllUsers', result);
   });
 
   //---------creating the posts-----------//
@@ -66,7 +66,9 @@ io.on('connection', (Socket) => {
 
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async (payload) => {
+    console.log('giting following 123');
     let friends = await Interface.getFollowing(payload);
+    console.log('friends 123', friends);
     let allPosts = await Interface.getAllPosts(friends, payload);
     console.log('before sending the posts:', allPosts);
     Socket.emit('read', allPosts);
@@ -97,6 +99,7 @@ io.on('connection', (Socket) => {
   Socket.on('addFriend', async (data) => {
     // console.log(data);
     let result = await Interface.addFriend(data);
+    Socket.emit('friendAdded');
     // console.log(result);
   });
 
@@ -112,7 +115,7 @@ io.on('connection', (Socket) => {
   Socket.on('getFollowing', async (data) => {
     // console.log('data ', data);
     let result = await Interface.getFollowing(data);
-    // console.log(result);
+    // console.log('following');
     Socket.emit('returnFollowing', result);
   });
 
