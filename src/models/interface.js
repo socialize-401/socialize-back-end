@@ -376,6 +376,18 @@ class Interface {
     }
     // console.log(likers);
   };
+  //----getting target profile info from DB----//
+  static getTargetInfo = async(id)=>{
+    let sql = `SELECT * FROM users WHERE id=$1;`;
+    let value = [id];
+    return pool.query(sql,value);
+  }
+  //---getting target posts from DB----//
+  static getTargetPosts = async (id)=>{
+    let sql = `SELECT * FROM posts WHERE poster_id=$1;`;
+    let value=[id];
+    return pool.query(sql,value);
+  }
 }
 
 module.exports = Interface;
