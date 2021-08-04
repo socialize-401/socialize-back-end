@@ -118,6 +118,11 @@ class Interface {
   };
 
   static getAllGroups = async (data) => {
+    let sql1 =`SELECT * FROM user_groups WHERE member_id!=$1;`;
+    let val = [data.userID];
+    let test = await pool.query(sql1, val);
+    console.log('test',test.rows);
+
     let sql = `SELECT * FROM groups WHERE owner_id!=$1;`;
     let values = [data.userID];
     let allGroups = await pool.query(sql, values);
@@ -220,10 +225,12 @@ class Interface {
   };
 
   static acceptJoinGroup = async (data) => {
+    // console.log('data',data);
     let sql = `UPDATE user_groups SET approval_status=$1 WHERE member_id=$2 AND group_id=$3 RETURNING *;`;
     let value = [true, data.memberId, data.groupId];
 
-    let result = pool.query(sql, value);
+    let result = await pool.query(sql, value);
+    // console.log('results',result.rows);
     return result.rows[0];
   };
 
@@ -233,7 +240,7 @@ class Interface {
     let senderData = await pool.query(senderSql, senderValues);
 
     let senderName = `${senderData.rows[0].firstname} ${senderData.rows[0].lastname}`;
-    console.log(senderName);
+    // console.log(senderName);
 
     let sql = `INSERT INTO g_posts (content,g_member_id,g_groups_id,poster_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
     let values = [data.postContent, data.userID, data.groupID, senderName];
