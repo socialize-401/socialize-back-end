@@ -61,8 +61,18 @@ io.on('connection', (Socket) => {
 
   Socket.on('getAllGroupPosts', async (payload) => {
     let allGroupPosts = await Interface.allGroupPosts(payload);
+    console.log('payload',payload);
+    let newAllPosts = allGroupPosts.sort((a, b) => {
+      if (a.id > b.id) {
+        return -1;
+      } else if (a.id < b.id) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
     // console.log('allGroupPosts', allGroupPosts);
-    Socket.emit('returnNewGroupPost', allGroupPosts);
+    Socket.emit('returnNewGroupPost',newAllPosts);
   });
 
   //-------creating comments--------//
@@ -101,7 +111,16 @@ io.on('connection', (Socket) => {
     // console.log('friends 123', friends);
     let allPosts = await Interface.getAllPosts(friends, payload);
     // console.log('before sending the posts:', allPosts);
-    Socket.emit('read', allPosts);
+    let newAllPosts = allPosts.sort((a, b) => {
+      if (a.id > b.id) {
+        return -1;
+      } else if (a.id < b.id) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+    Socket.emit('read', newAllPosts);
   });
 
   //----getting all comment to frontEnd----//
@@ -228,19 +247,11 @@ io.on('connection', (Socket) => {
 
   Socket.on('groupPostLike', async (payload) => {
     let newLikes = await Interface.createGroupPostLike(payload);
-    // console.log(allLikes);
-    let allLikes = await Interface.getAllGroupLikes(payload);
-    // console.log(allLikes);
-    Socket.emit('returnGroupLikes', allLikes);
+    Socket.emit('returnGroupLikes',newLikes);
   });
 
-  Socket.on('like', async (payload) => {
-    await Interface.createLike(payload);
-    // console.log(allLikes.rows);
-    let allLikes = await Interface.gitAllLikes();
-    // console.log(allLikes);
-    await Interface.getLikers(allLikes);
-  });
+
+  
   //----getting target info and sending them to FE----//
   Socket.on('getTargetInfo', async (id) => {
     let target = await Interface.getTargetInfo(id);
@@ -265,6 +276,11 @@ io.on('connection', (Socket) => {
   //-----new users list-----//
   Socket.on('getNewUsersList', () => {
     io.emit('newUsersList');
+  })
+  //------update like-----//
+  Socket.on('like',async (payload)=>{
+    let likes = await Interface.createLike(payload);
+    io.emit('newLike')
   })
 });
 
