@@ -286,31 +286,36 @@ class Interface {
   };
 
   static createPost = async (obj) => {
-    let sql = `INSERT INTO posts (poster_id,content) VALUES ($1,$2) RETURNING *;`;
-    let values = [obj.userID, obj.postContent];
+    let sql = `INSERT INTO posts (poster_id,content,poster_name) VALUES ($1,$2,$3) RETURNING *;`;
+    let values = [obj.userID, obj.postContent,obj.name];
     let query = await pool.query(sql, values);
     return query;
   };
 
   static getAllPosts = async (friends, payload) => {
+    
     let result = [];
-    let sql = `SELECT * FROM posts WHERE poster_id=$1;`;
-    let value = [payload.userID];
-    let all = await pool.query(sql, value);
-    result = [...result, ...all.rows];
+    let sql;
+    let value;
     for (let i = 0; i < friends.length; i++) {
       sql = `SELECT * FROM posts WHERE poster_id=$1;`;
       value = [friends[i].id];
       let all = await pool.query(sql, value);
       // console.log(all.rows);
-      result = [...result, ...all.rows];
-    }
 
+      result = [ ...all.rows];
+    }
+    // console.log('friends result is: ',result);
+    sql = `SELECT * FROM posts WHERE poster_id=$1;`;
+    value = [payload.userID];
+    let all = await pool.query(sql, value);
+    result = [...result, ...all.rows];
+    // console.log('all results are: ',result)
     return result;
   };
   static createComment = async (obj) => {
-    let sql = `INSERT INTO comments (content,commenter_id,post_id) VALUES ($1,$2,$3) RETURNING *;`;
-    let values = [obj.content, obj.userID, obj.post_id];
+    let sql = `INSERT INTO comments (content,commenter_id,post_id,commenter_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
+    let values = [obj.content, obj.userID, obj.post_id,obj.name];
     let query = await pool.query(sql, values);
     return query.rows;
   };
