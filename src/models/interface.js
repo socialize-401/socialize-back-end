@@ -248,7 +248,7 @@ class Interface {
     let sql = `SELECT * FROM g_posts WHERE g_groups_id=$1;`;
     let value = [data.groupID];
     let allGroupPosts = await pool.query(sql, value);
-
+   
     return allGroupPosts.rows;
   };
 
@@ -350,40 +350,21 @@ class Interface {
 
 
   static createLike = async (obj) => {
-    let sql = `INSERT INTO likes (liker,post_id) VALUES ($1,$2) RETURNING *;`;
-    let values = [obj.userID, obj.post_id];
+    let sql = `UPDATE posts SET likes=likes+1 WHERE id=$1 RETURNING *`;
+    //UPDATE user_groups SET approval_status=$1 WHERE member_id=$2 AND group_id=$3 RETURNING *;
+    let values = [obj];
     let all = await pool.query(sql, values);
-    // return all;
+  
   };
 
   static createGroupPostLike = async (obj) => {
-    let sql = `INSERT INTO g_likes (g_liker,g_post_id) VALUES ($1,$2) RETURNING *;`;
-    let values = [obj.userId, obj.postId];
+    let sql = `UPDATE G_posts SET likes=likes+1 WHERE id=$1 RETURNING *;`;
+    let values = [obj.postId];
     let likes = await pool.query(sql, values);
+    console.log(likes.rows);
     return likes.rows;
   };
 
-  static getAllGroupLikes = async (obj) => {
-    let sql = `SELECT * FROM g_likes WHERE g_post_id=$1;`;
-    let values=[obj.postId]
-    let allLikes = await pool.query(sql,values);
-    return allLikes.rows;
-  };
-
-  static gitAllLikes = async () => {
-    let sql = `SELECT * FROM likes;`;
-    let allLikes = await pool.query(sql);
-    return allLikes.rows;
-  };
-  static getLikers = async (likesArray) => {
-    let likers = [];
-    for (let i = 0; i < likesArray.length; i++) {
-      let sql = `SELECT * FROM users WHERE id=${likesArray[i].liker};`;
-      let liker = await pool.query(sql);
-      likers.push(liker.rows[0]);
-    }
-    // console.log(likers);
-  };
   //----getting target profile info from DB----//
   static getTargetInfo = async(id)=>{
     let sql = `SELECT * FROM users WHERE id=$1;`;

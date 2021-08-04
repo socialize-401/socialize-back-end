@@ -45,6 +45,7 @@ CREATE TABLE posts(
     poster_id int NOT NULL ,
     poster_name text,
     send_time timestamp NOT NULL DEFAULT NOW(),
+    likes int DEFAULT 0,
     FOREIGN KEY (poster_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
