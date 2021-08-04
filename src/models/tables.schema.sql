@@ -43,6 +43,8 @@ CREATE TABLE posts(
     id SERIAL PRIMARY KEY,
     content text,
     poster_id int NOT NULL ,
+    poster_name text,
+    send_time timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (poster_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -51,6 +53,8 @@ CREATE TABLE comments(
     content text,
     commenter_id int,
     post_id int,
+    commenter_name text,
+    send_time timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (commenter_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -59,6 +63,7 @@ CREATE TABLE likes(
     id SERIAL PRIMARY KEY,
     liker int NOT NULL,
     post_id int NOT NULL,
+    liker_name text,
     FOREIGN KEY (liker) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
@@ -97,8 +102,11 @@ CREATE TABLE user_groups(
 CREATE TABLE G_posts(
     id SERIAL PRIMARY KEY,
     content text,
-    G_member_id int NOT NULL ,
-    G_groups_id int NOT NULL ,
+    G_member_id int NOT NULL,
+    G_groups_id int NOT NULL,
+    poster_name text,
+    send_time timestamp NOT NULL DEFAULT NOW(),
+    likes int DEFAULT 0,
     FOREIGN KEY (G_member_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (G_groups_id) REFERENCES groups(id) ON DELETE CASCADE
 );
@@ -107,6 +115,7 @@ CREATE TABLE G_likes(
     id SERIAL PRIMARY KEY,
     G_liker int NOT NULL,
     G_post_id int NOT NULL,
+    liker_name text,
     FOREIGN KEY (G_liker) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (G_post_id) REFERENCES G_posts(id) ON DELETE CASCADE
 );
@@ -116,6 +125,8 @@ CREATE TABLE G_comments(
     content text,
     G_commenter_id int,
     G_post_id int,
+    G_commenter_name text,
+    send_time timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (G_commenter_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (G_post_id) REFERENCES G_posts(id) ON DELETE CASCADE
 );
