@@ -41,7 +41,7 @@ io.on('connection', (Socket) => {
       let created = await Interface.createPost(payload);
       // console.log('payload of post',payload);
       let friends = await Interface.getFollowing(payload);
-      let allPosts = await Interface.getAllPosts(friends, payload);
+      // let allPosts = await Interface.getAllPosts(friends, payload);
       //------declare a new psot has been added to all client-----//
       io.emit('newPost');
     } catch (e) {
@@ -100,7 +100,7 @@ io.on('connection', (Socket) => {
     let friends = await Interface.getFollowing(payload);
     // console.log('friends 123', friends);
     let allPosts = await Interface.getAllPosts(friends, payload);
-    // console.log('before sending the posts:', allPosts);
+    console.log('before sending the posts:', allPosts);
     Socket.emit('read', allPosts);
   });
 
@@ -129,8 +129,8 @@ io.on('connection', (Socket) => {
   Socket.on('addFriend', async (data) => {
     // console.log(data);
     let result = await Interface.addFriend(data);
+    console.log(result);
     Socket.emit('friendAdded');
-    // console.log(result);
   });
 
   Socket.on('sendMessage', async (data) => {
@@ -249,6 +249,10 @@ io.on('connection', (Socket) => {
     let targetPosts = await Interface.getTargetPosts(id);
     Socket.emit('targetPosts',targetPosts.rows);
   });
+  //-----new users list-----//
+  Socket.on('getNewUsersList',()=>{
+    io.emit('newUsersList');
+  })
 });
 
 function start(port) {
