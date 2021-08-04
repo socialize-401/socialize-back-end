@@ -118,12 +118,8 @@ class Interface {
   };
 
   static getAllGroups = async (data) => {
-    let sql1 =`SELECT * FROM user_groups WHERE member_id!=$1;`;
-    let val = [data.userID];
-    let test = await pool.query(sql1, val);
-    console.log('test',test.rows);
 
-    let sql = `SELECT * FROM groups WHERE owner_id!=$1;`;
+    let sql = `SELECT * FROM groups WHERE id NOT IN(SELECT group_id FROM user_groups WHERE member_id=$1);`;
     let values = [data.userID];
     let allGroups = await pool.query(sql, values);
 
