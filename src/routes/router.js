@@ -20,7 +20,7 @@ router.get('/confirmation/:token', async (req, res) => {
   return res.redirect('http://localhost:3000/');
 });
 
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
   res.send('Hello home route !');
 });
 
