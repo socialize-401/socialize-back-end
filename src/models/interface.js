@@ -34,14 +34,15 @@ class Interface {
         pass: process.env.PASSWORD, // generated ethereal password
       },
     });
-    let url = `http://localhost:5000/confirmation/${token}`;
+    let url = `https://socialize401.herokuapp.com/confirmation/${token}`;
     // send mail with defined transport object
     await transporter.sendMail({
       from: '"socialize" <socialize401@gmail.com>', // sender address
       to: `${obj.email}`, // list of receivers
       subject: 'confirm your email to login', // Subject line
       text: 'Hello world?', // plain text body
-      html: `<b>confirmation email:</b><br><a href="${url}">${url}</a>`, // html body
+      html: `<b> Welcom to socialize </b> <br> <p> to confirm your email follow this link </p>
+     <br><a href="${url}">${url}</a>`, // html body
     });
     return created;
   };
