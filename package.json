@@ -1,4 +1,8 @@
 {
+  "name": "socialize-back-end",
+  "version": "1.0.0",
+  "description": "- Hiba Saleem. - Amro Al-Barham. - Yazan Tafesh. - Saeed Awwad. ### description:   a fully authenticated social media app. users can make friends, post like and comment on other posts.",
+  "main": "index.js",
   "dependencies": {
     "base-64": "^1.0.0",
     "bcrypt": "^5.0.1",
@@ -14,5 +18,19 @@
   },
   "devDependencies": {
     "http-proxy-middleware": "^2.0.1"
-  }
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/socialize-401/socialize-back-end.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/socialize-401/socialize-back-end/issues"
+  },
+  "homepage": "https://github.com/socialize-401/socialize-back-end#readme"
 }
