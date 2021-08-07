@@ -56,23 +56,31 @@ io.on('connection', (Socket) => {
     // console.log('createdPost', createdPost);
     let allGroupPosts = await Interface.allGroupPosts(payload);
     // console.log('allGroupPosts', allGroupPosts);
-    Socket.emit('returnNewGroupPost', allGroupPosts);
+    io.to(`group-${payload.groupId}`).emit('returnNewGroupPost', allGroupPosts);
   });
 
   Socket.on('getAllGroupPosts', async (payload) => {
+    let allGroups = await Interface.getAllGroups(payload);
+
+    for (let i = 0; i < allGroups.length; i++) {
+      if (allGroups[i].id !== payload.groupId)
+        Socket.leave(`group-${allGroups[i].id}`);
+    }
+    Socket.join(`group-${payload.groupId}`);
+
     let allGroupPosts = await Interface.allGroupPosts(payload);
-    console.log('payload',payload);
     let newAllPosts = allGroupPosts.sort((a, b) => {
       if (a.id > b.id) {
-        return -1;
-      } else if (a.id < b.id) {
         return 1;
+      } else if (a.id < b.id) {
+        return -1;
       } else {
         return 0;
       }
     });
-    // console.log('allGroupPosts', allGroupPosts);
-    Socket.emit('returnNewGroupPost',newAllPosts);
+    console.log('allGroupPosts', newAllPosts);
+    let room = `group-${payload.groupId}`;
+    io.to(room).emit('returnNewGroupPost', newAllPosts);
   });
 
   //-------creating comments--------//
@@ -88,14 +96,14 @@ io.on('connection', (Socket) => {
     }
   });
 
-
   Socket.on('groupComment', async (payload) => {
-
     let newComment = await Interface.createGroupComment(payload);
     // console.log(newComment);
     let allGroupComments = await Interface.getAllGroupComments();
-    Socket.emit('returnGroupComments', allGroupComments);
-
+    io.to(`group-${payload.groupId}`).emit(
+      'returnGroupComments',
+      allGroupComments
+    );
   });
 
   Socket.on('getAllGroupComments', async () => {
@@ -150,7 +158,7 @@ io.on('connection', (Socket) => {
     let result = await Interface.addFriend(data);
     // console.log(result);
     Socket.emit('friendAdded');
-    io.emit('haveBeenFollowed', data.reciverId)
+    io.emit('haveBeenFollowed', data.reciverId);
   });
 
   Socket.on('sendMessage', async (data) => {
@@ -219,7 +227,10 @@ io.on('connection', (Socket) => {
 
     // let allMessages = await Interface.returnMessages(data.messageRoomId);
     // io.in(data.groupId).emit('returnPosts', allMessages);
-    io.emit('requestAccepted', { ownerId: data.ownerId, memberId: data.memberId })
+    io.emit('requestAccepted', {
+      ownerId: data.ownerId,
+      memberId: data.memberId,
+    });
     console.log('requestAccepted');
   });
 
@@ -231,11 +242,18 @@ io.on('connection', (Socket) => {
   });
 
   Socket.on('viewGroup', async (data) => {
-    // console.log('data ', data);
+    let allGroups = await Interface.getAllGroups(data);
+
+    for (let i = 0; i < allGroups.length; i++) {
+      if (allGroups[i].id !== data.groupId)
+        Socket.leave(`group-${allGroups[i].id}`);
+    }
+
     Socket.join(`group-${data.groupId}`);
     let result = await Interface.viewGroup(data);
     // console.log(result.group_name);
-    Socket.emit('returnCurrentGroupContent', result);
+    let room = `group-${data.groupId}`;
+    io.in(room).emit('returnCurrentGroupContent', result);
   });
 
   Socket.on('getGroupMembers', async (data) => {
@@ -247,11 +265,9 @@ io.on('connection', (Socket) => {
 
   Socket.on('groupPostLike', async (payload) => {
     let newLikes = await Interface.createGroupPostLike(payload);
-    Socket.emit('returnGroupLikes',newLikes);
+    Socket.emit('returnGroupLikes', newLikes);
   });
 
-
-  
   //----getting target info and sending them to FE----//
   Socket.on('getTargetInfo', async (id) => {
     let target = await Interface.getTargetInfo(id);
@@ -276,12 +292,12 @@ io.on('connection', (Socket) => {
   //-----new users list-----//
   Socket.on('getNewUsersList', () => {
     io.emit('newUsersList');
-  })
+  });
   //------update like-----//
-  Socket.on('like',async (payload)=>{
+  Socket.on('like', async (payload) => {
     let likes = await Interface.createLike(payload);
-    io.emit('newLike')
-  })
+    io.emit('newLike');
+  });
 });
 
 function start(port) {

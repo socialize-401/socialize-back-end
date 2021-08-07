@@ -118,7 +118,6 @@ class Interface {
   };
 
   static getAllGroups = async (data) => {
-
     let sql = `SELECT * FROM groups WHERE id NOT IN(SELECT group_id FROM user_groups WHERE member_id=$1);`;
     let values = [data.userID];
     let allGroups = await pool.query(sql, values);
@@ -178,6 +177,7 @@ class Interface {
     // console.log(usergroups.rows);
 
     let groupsNames = [];
+
     for (let i = 0; i < usergroups.rows.length; i++) {
       let tempsql = `SELECT * FROM groups WHERE id=$1;`;
       let tempvalues = [usergroups.rows[i].group_id];
@@ -202,7 +202,6 @@ class Interface {
   };
 
   static getGroupMembers = async (data) => {
-    
     // let sql = `SELECT * FROM user_groups WHERE group_id=$1 AND approval_status=$2;`;
     // let values = [data.groupID, true];
     // let groupData = await pool.query(sql, values);
@@ -214,7 +213,7 @@ class Interface {
     //   let tempdata = await pool.query(tempsql, tempvalues);
     //   result.push(tempdata.rows[0]);
     // }
-    let sql=`SELECT users.firstname,users.lastname from users INNER JOIN user_groups ON user_groups.member_id=users.id WHERE group_id=$1 AND approval_status=$2;`
+    let sql = `SELECT users.firstname,users.lastname from users INNER JOIN user_groups ON user_groups.member_id=users.id WHERE group_id=$1 AND approval_status=$2;`;
     let values = [data.groupID, true];
     let groupData = await pool.query(sql, values);
     return groupData.rows;
@@ -248,7 +247,7 @@ class Interface {
     let sql = `SELECT * FROM g_posts WHERE g_groups_id=$1;`;
     let value = [data.groupID];
     let allGroupPosts = await pool.query(sql, value);
-   
+
     return allGroupPosts.rows;
   };
 
@@ -290,13 +289,12 @@ class Interface {
 
   static createPost = async (obj) => {
     let sql = `INSERT INTO posts (poster_id,content,poster_name) VALUES ($1,$2,$3) RETURNING *;`;
-    let values = [obj.userID, obj.postContent,obj.name];
+    let values = [obj.userID, obj.postContent, obj.name];
     let query = await pool.query(sql, values);
     return query;
   };
 
   static getAllPosts = async (friends, payload) => {
-    
     let result = [];
     let sql;
     let value;
@@ -306,7 +304,7 @@ class Interface {
       let all = await pool.query(sql, value);
       // console.log(all.rows);
 
-      result = [ ...all.rows];
+      result = [...all.rows];
     }
     // console.log('friends result is: ',result);
     sql = `SELECT * FROM posts WHERE poster_id=$1;`;
@@ -318,7 +316,7 @@ class Interface {
   };
   static createComment = async (obj) => {
     let sql = `INSERT INTO comments (content,commenter_id,post_id,commenter_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
-    let values = [obj.content, obj.userID, obj.post_id,obj.name];
+    let values = [obj.content, obj.userID, obj.post_id, obj.name];
     let query = await pool.query(sql, values);
     return query.rows;
   };
@@ -326,7 +324,7 @@ class Interface {
   static createGroupComment = async (obj) => {
     let sequel = `SELECT * FROM users WHERE id=$1;`;
     let tempVal = [obj.userId];
-    let readQuery = await pool.query(sequel,tempVal)
+    let readQuery = await pool.query(sequel, tempVal);
     let commenterName = `${readQuery.rows[0].firstname} ${readQuery.rows[0].lastname}`;
 
     let sql = `INSERT INTO g_comments (content,g_commenter_id,g_post_id,g_commenter_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
@@ -335,7 +333,6 @@ class Interface {
     return query.rows[0];
   };
 
-  
   static getAllComments = async () => {
     let sql = `SELECT * FROM comments;`;
     let all = await pool.query(sql);
@@ -348,13 +345,11 @@ class Interface {
     return all.rows;
   };
 
-
   static createLike = async (obj) => {
     let sql = `UPDATE posts SET likes=likes+1 WHERE id=$1 RETURNING *`;
     //UPDATE user_groups SET approval_status=$1 WHERE member_id=$2 AND group_id=$3 RETURNING *;
     let values = [obj];
     let all = await pool.query(sql, values);
-  
   };
 
   static createGroupPostLike = async (obj) => {
@@ -366,17 +361,17 @@ class Interface {
   };
 
   //----getting target profile info from DB----//
-  static getTargetInfo = async(id)=>{
+  static getTargetInfo = async (id) => {
     let sql = `SELECT * FROM users WHERE id=$1;`;
     let value = [id];
-    return pool.query(sql,value);
-  }
+    return pool.query(sql, value);
+  };
   //---getting target posts from DB----//
-  static getTargetPosts = async (id)=>{
+  static getTargetPosts = async (id) => {
     let sql = `SELECT * FROM posts WHERE poster_id=$1;`;
-    let value=[id];
-    return pool.query(sql,value);
-  }
+    let value = [id];
+    return pool.query(sql, value);
+  };
 }
 
 module.exports = Interface;
