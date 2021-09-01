@@ -1,7 +1,6 @@
 'use strict';
 require('dotenv').config();
 const pool = require('../../pool.js');
-
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
@@ -9,6 +8,7 @@ const SECRET = process.env.SECRET;
 
 class Interface {
   static create = async (obj) => {
+    console.log('entiring create');
     let sql = `INSERT INTO auth (Email,pass,token) VALUES ($1,$2,$3) RETURNING *;`;
     let sql1 = `INSERT INTO users (firstName,lastName) VALUES ($1,$2) RETURNING *;`;
     let hashedPassword = await bcrypt.hash(obj.pass, 10);
@@ -34,7 +34,8 @@ class Interface {
         pass: process.env.PASSWORD, // generated ethereal password
       },
     });
-    let url = `https://socialize401.herokuapp.com/confirmation/${token}`;
+    let url = `${process.env.REDIRECT_NODEMAILER}/confirmation/${token}`;
+    console.log('url created');
     // send mail with defined transport object
     await transporter.sendMail({
       from: '"socialize" <socialize401@gmail.com>', // sender address
@@ -44,9 +45,11 @@ class Interface {
       html: `<b> Welcom to socialize </b> <br> <p> to confirm your email follow this link </p>
      <br><a href="${url}">${url}</a>`, // html body
     });
+    console.log('email sent');
     return created;
   };
   static read(email) {
+    console.log('inside read');
     if (email) {
       let sql = `SELECT * FROM auth WHERE Email=$1;`;
       let value = [email];

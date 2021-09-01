@@ -55,19 +55,20 @@ io.on('connection', (Socket) => {
   Socket.on('groupPost', async (payload) => {
     let createdPost = await Interface.createGroupPost(payload);
     // console.log('createdPost', createdPost);
-    let allGroupPosts = await Interface.allGroupPosts(payload);
+    // let allGroupPosts = await Interface.allGroupPosts(payload);
     // console.log('allGroupPosts', allGroupPosts);
-    io.to(`group-${payload.groupId}`).emit('returnNewGroupPost', allGroupPosts);
+    // io.to(`group-${payload.groupID}`).emit('returnNewGroupPost', allGroupPosts);
+    io.emit('newGroupPostMade',payload.groupID);
   });
 
   Socket.on('getAllGroupPosts', async (payload) => {
-    let allGroups = await Interface.getAllGroups(payload);
+    // let allGroups = await Interface.getAllGroups(payload);
 
-    for (let i = 0; i < allGroups.length; i++) {
-      if (allGroups[i].id !== payload.groupId)
-        Socket.leave(`group-${allGroups[i].id}`);
-    }
-    Socket.join(`group-${payload.groupId}`);
+    // for (let i = 0; i < allGroups.length; i++) {
+    //   if (allGroups[i].id !== payload.groupId)
+    //     Socket.leave(`group-${allGroups[i].id}`);
+    // }
+    // Socket.join(`group-${payload.groupId}`);
 
     let allGroupPosts = await Interface.allGroupPosts(payload);
     let newAllPosts = allGroupPosts.sort((a, b) => {
@@ -79,9 +80,9 @@ io.on('connection', (Socket) => {
         return 0;
       }
     });
-    console.log('allGroupPosts', newAllPosts);
-    let room = `group-${payload.groupId}`;
-    io.to(room).emit('returnNewGroupPost', newAllPosts);
+    // console.log('allGroupPosts', newAllPosts);
+    // let room = `group-${payload.groupId}`;
+    Socket.emit('returnNewGroupPost', newAllPosts);
   });
 
   //-------creating comments--------//
