@@ -1,7 +1,6 @@
 'use strict';
 require('dotenv').config();
 const pool = require('../../pool.js');
-
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
@@ -34,7 +33,7 @@ class Interface {
         pass: process.env.PASSWORD, // generated ethereal password
       },
     });
-    let url = `https://socialize401.herokuapp.com/confirmation/${token}`;
+    let url = `${process.env.REDIRECT_NODEMAILER}/confirmation/${token}`;
     // send mail with defined transport object
     await transporter.sendMail({
       from: '"socialize" <socialize401@gmail.com>', // sender address
@@ -47,6 +46,7 @@ class Interface {
     return created;
   };
   static read(email) {
+
     if (email) {
       let sql = `SELECT * FROM auth WHERE Email=$1;`;
       let value = [email];
@@ -61,7 +61,6 @@ class Interface {
   static getAllUsers = async () => {
     let sql = `SELECT * FROM users;`;
     let allUsers = await pool.query(sql);
-    // console.log(allUsers.rows);
     return allUsers.rows;
   };
   static addFriend = async (data) => {
@@ -102,13 +101,13 @@ class Interface {
   };
 
   static createGroup = async (obj) => {
-    // console.log(obj);
+    // (obj);
 
     let sql = `INSERT INTO groups (group_name,owner_id,group_description) VALUES ($1,$2,$3) RETURNING *;`;
     let values = [obj.group_name, obj.group_owner, obj.group_description];
     let query = await pool.query(sql, values);
 
-    // console.log(query.rows[0]);
+    // (query.rows[0]);
     let data = query.rows[0];
 
     let sql1 = `INSERT INTO user_groups (group_id,member_id,owner_id,approval_status) VALUES ($1,$2,$3,$4) RETURNING *;`;
@@ -135,66 +134,37 @@ class Interface {
   };
 
   static getGroupRequests = async (data) => {
-    let sql = `SELECT * FROM user_groups WHERE owner_id=$1 AND approval_status=$2;`;
+
+    let sql = `SELECT user_groups.group_id,user_groups.member_id,user_groups.owner_id,user_groups.approval_status,users.id,users.firstname,users.lastname,groups.group_name FROM user_groups INNER JOIN users ON users.id=user_groups.member_id INNER JOIN groups ON groups.id=user_groups.group_id WHERE user_groups.owner_id=$1 AND user_groups.approval_status=$2;`;
     let values = [data.userID, false];
     let groupRequests = await pool.query(sql, values);
-
-    console.log(groupRequests.rows);
-
-    let groupsNames = [];
-    for (let i = 0; i < groupRequests.rows.length; i++) {
-      let tempsql = `SELECT * FROM groups WHERE id=$1;`;
-      let tempvalues = [groupRequests.rows[i].group_id];
-      let tempdata = await pool.query(tempsql, tempvalues);
-      console.log('hi group name', tempdata.rows);
-      groupsNames.push(tempdata.rows[0].group_name);
-    }
-
-    let membersNames = [];
-    for (let i = 0; i < groupRequests.rows.length; i++) {
-      let tempsql1 = `SELECT * FROM users WHERE id=$1;`;
-      let tempvalues1 = [groupRequests.rows[i].member_id];
-      let tempdata1 = await pool.query(tempsql1, tempvalues1);
-      console.log('hi group name', tempdata1.rows);
-      membersNames.push(
-        `${tempdata1.rows[0].firstname} ${tempdata1.rows[0].lastname} `
-      );
-    }
-
-    let retrnedData = {
-      data: groupRequests.rows,
-      groupsNames: groupsNames,
-      membersNames: membersNames,
-    };
-
-    return retrnedData;
+    return groupRequests.rows;
   };
 
   static getUsergroups = async (data) => {
-    let sql = `SELECT * FROM user_groups WHERE member_id=$1 AND approval_status=$2;`;
-    // let sql = `SELECT groups.group_name FROM groups INNER JOIN user_groups ON groups.id = user_groups.group_id WHERE member_id=$1 AND approval_status=$2;`;
-
+    // let sql = `SELECT * FROM user_groups WHERE member_id=$1 AND approval_status=$2;`;
+    let sql = `SELECT * FROM user_groups INNER JOIN groups ON groups.id=user_groups.group_id WHERE user_groups.member_id=$1 AND user_groups.approval_status=$2;`;
     let values = [data.userID, true];
     let usergroups = await pool.query(sql, values);
 
-    console.log(usergroups.rows);
-    // SELECT groups.group_name FROM groups INNER JOIN user_groups ON groups.id = user_groups.group_id WHERE member_id=$1 AND approval_status=$2
-    let groupsNames = [];
+    // (usergroups.rows);
+    //SELECT * FROM user_groups INNER JOIN groups ON groups.id=user_groups.group_id WHERE user_groups.member_id=$1 AND user_groups.approval_status=$2;
+    // let groupsNames = [];
 
-    for (let i = 0; i < usergroups.rows.length; i++) {
-      let tempsql = `SELECT * FROM groups WHERE id=$1;`;
-      let tempvalues = [usergroups.rows[i].group_id];
-      let tempdata = await pool.query(tempsql, tempvalues);
-      // console.log('hi group name', tempdata.rows);
-      groupsNames.push(tempdata.rows[0].group_name);
-    }
+    // for (let i = 0; i < usergroups.rows.length; i++) {
+    //   let tempsql = `SELECT * FROM groups WHERE id=$1;`;
+    //   let tempvalues = [usergroups.rows[i].group_id];
+    //   let tempdata = await pool.query(tempsql, tempvalues);
+    //   // ('hi group name', tempdata.rows);
+    //   groupsNames.push(tempdata.rows[0].group_name);
+    // }
 
-    let retrnedData = {
-      data: usergroups.rows,
-      groupsNames: groupsNames,
-    };
+    // let retrnedData = {
+    //   data: usergroups.rows,
+    //   groupsNames: groupsNames,
+    // };
 
-    return retrnedData;
+    return usergroups.rows;
   };
 
   static viewGroup = async (data) => {
@@ -205,17 +175,7 @@ class Interface {
   };
 
   static getGroupMembers = async (data) => {
-    // let sql = `SELECT * FROM user_groups WHERE group_id=$1 AND approval_status=$2;`;
-    // let values = [data.groupID, true];
-    // let groupData = await pool.query(sql, values);
 
-    // let result = [];
-    // for (let i = 0; i < groupData.rows.length; i++) {
-    //   let tempsql = `SELECT * FROM users WHERE id=$1;`;
-    //   let tempvalues = [groupData.rows[i].member_id];
-    //   let tempdata = await pool.query(tempsql, tempvalues);
-    //   result.push(tempdata.rows[0]);
-    // }
     let sql = `SELECT users.firstname,users.lastname from users INNER JOIN user_groups ON user_groups.member_id=users.id WHERE group_id=$1 AND approval_status=$2;`;
     let values = [data.groupID, true];
     let groupData = await pool.query(sql, values);
@@ -223,12 +183,12 @@ class Interface {
   };
 
   static acceptJoinGroup = async (data) => {
-    // console.log('data',data);
+    // ('data',data);
     let sql = `UPDATE user_groups SET approval_status=$1 WHERE member_id=$2 AND group_id=$3 RETURNING *;`;
     let value = [true, data.memberId, data.groupId];
 
     let result = await pool.query(sql, value);
-    // console.log('results',result.rows);
+    // ('results',result.rows);
     return result.rows[0];
   };
 
@@ -238,7 +198,7 @@ class Interface {
     let senderData = await pool.query(senderSql, senderValues);
 
     let senderName = `${senderData.rows[0].firstname} ${senderData.rows[0].lastname}`;
-    // console.log(senderName);
+    // (senderName);
 
     let sql = `INSERT INTO g_posts (content,g_member_id,g_groups_id,poster_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
     let values = [data.postContent, data.userID, data.groupID, senderName];
@@ -255,39 +215,29 @@ class Interface {
   };
 
   static getFollowing = async (data) => {
-    let sql = `SELECT * FROM friends WHERE senderid=$1;`;
+    let sql = `SELECT users.firstname,users.lastname,friends.senderid,friends.receiverid,friends.id FROM friends INNER JOIN users ON friends.receiverid=users.id WHERE friends.senderid=$1;`;
     let values = [data.userID];
     let getFollowing = await pool.query(sql, values);
 
-    let result = [];
+    // let result = [];
 
-    for (let i = 0; i < getFollowing.rows.length; i++) {
-      let tempsql = `SELECT * FROM users WHERE id=$1;`;
-      let tempvalues = [getFollowing.rows[i].receiverid];
-      let tempdata = await pool.query(tempsql, tempvalues);
-      // console.log('hi', tempdata.rows);
-      result.push(tempdata.rows[0]);
-    }
-    // console.log('result', result);
-    return result;
+    // for (let i = 0; i < getFollowing.rows.length; i++) {
+    //   let tempsql = `SELECT * FROM users WHERE id=$1;`;
+    //   let tempvalues = [getFollowing.rows[i].receiverid];
+    //   let tempdata = await pool.query(tempsql, tempvalues);
+    //   // ('hi', tempdata.rows);
+    //   result.push(tempdata.rows[0]);
+    // }
+    // ('result', result);
+    return getFollowing.rows;
   };
 
   static getFollowers = async (data) => {
-    let sql = `SELECT * FROM friends WHERE receiverid=$1;`;
+    let sql = `SELECT users.firstname,users.lastname,friends.senderid,friends.receiverid,friends.id FROM friends INNER JOIN users ON friends.senderid=users.id WHERE friends.receiverid=$1;`;
     let values = [data.userID];
     let getFollowers = await pool.query(sql, values);
 
-    let result = [];
-
-    for (let i = 0; i < getFollowers.rows.length; i++) {
-      let tempsql = `SELECT * FROM users WHERE id=$1;`;
-      let tempvalues = [getFollowers.rows[i].senderid];
-      let tempdata = await pool.query(tempsql, tempvalues);
-      // console.log('hi', tempdata.rows);
-      result.push(tempdata.rows[0]);
-    }
-    // console.log('result', result);
-    return result;
+    return getFollowers.rows;
   };
 
   static createPost = async (obj) => {
@@ -301,22 +251,20 @@ class Interface {
     let result = [];
     let sql;
     let value;
+    // console.log(friends);
     for (let i = 0; i < friends.length; i++) {
       sql = `SELECT * FROM posts WHERE poster_id=$1;`;
       value = [friends[i].id];
       let all = await pool.query(sql, value);
-      // console.log(all.rows);
-
-      result = [...all.rows];
+      result = [...result,...all.rows];
     }
-    // console.log('friends result is: ',result);
     sql = `SELECT * FROM posts WHERE poster_id=$1;`;
     value = [payload.userID];
     let all = await pool.query(sql, value);
     result = [...result, ...all.rows];
-    // console.log('all results are: ',result)
     return result;
   };
+  
   static createComment = async (obj) => {
     let sql = `INSERT INTO comments (content,commenter_id,post_id,commenter_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
     let values = [obj.content, obj.userID, obj.post_id, obj.name];
@@ -359,7 +307,6 @@ class Interface {
     let sql = `UPDATE G_posts SET likes=likes+1 WHERE id=$1 RETURNING *;`;
     let values = [obj.postId];
     let likes = await pool.query(sql, values);
-    console.log(likes.rows);
     return likes.rows;
   };
 
