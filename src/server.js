@@ -238,7 +238,7 @@ io.on('connection', (Socket) => {
   Socket.on('getUsergroups', async (data) => {
     // console.log('data ', data);
     let result = await Interface.getUsergroups(data);
-    // console.log(result);
+    console.log('.getUsergroups', result);
     Socket.emit('returnUsergroups', result);
   });
 

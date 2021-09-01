@@ -17,7 +17,7 @@ router.get('/confirmation/:token', async (req, res) => {
   } catch (e) {
     res.send(e.message);
   }
-  return res.redirect('https://socialize401.netlify.app/');
+  return res.redirect('http://localhost:3000/');
 });
 
 router.get('/', (req, res) => {

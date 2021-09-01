@@ -172,11 +172,13 @@ class Interface {
 
   static getUsergroups = async (data) => {
     let sql = `SELECT * FROM user_groups WHERE member_id=$1 AND approval_status=$2;`;
+    // let sql = `SELECT groups.group_name FROM groups INNER JOIN user_groups ON groups.id = user_groups.group_id WHERE member_id=$1 AND approval_status=$2;`;
+
     let values = [data.userID, true];
     let usergroups = await pool.query(sql, values);
 
-    // console.log(usergroups.rows);
-
+    console.log(usergroups.rows);
+    // SELECT groups.group_name FROM groups INNER JOIN user_groups ON groups.id = user_groups.group_id WHERE member_id=$1 AND approval_status=$2
     let groupsNames = [];
 
     for (let i = 0; i < usergroups.rows.length; i++) {
