@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken');
 const base64 = require('base-64');
 const bcrypt = require('bcrypt');
 const pool = require('../../pool.js');
+require('dotenv').config();
 
 router.get('/confirmation/:token', async (req, res) => {
   try {
@@ -17,7 +18,7 @@ router.get('/confirmation/:token', async (req, res) => {
   } catch (e) {
     res.send(e.message);
   }
-  return res.redirect('https://socialize401.netlify.app/');
+  return res.redirect(`${process.env.CONFIRM_SIGN_UP}/`);
 });
 
 router.get('/', (req, res) => {
@@ -69,6 +70,7 @@ router.get('/signin', async (req, res) => {
 
 router.post('/signup', checker, async (req, res) => {
   try {
+    console.log('entiring sign up');
     const { email, pass, firstName, lastName } = req.body;
     let checkEmail = await Interface.read(email);
     console.log(checkEmail.rows);
