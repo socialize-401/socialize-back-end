@@ -25,9 +25,9 @@ app.use(router);
 io.listen(server);
 
 io.on('connection', (Socket) => {
-  // console.log('before test');
+  // ('before test');
   Socket.on('test', () => {
-    // console.log('Connected');
+    // ('Connected');
   });
 
   Socket.on('getAllUsers', async () => {
@@ -38,9 +38,9 @@ io.on('connection', (Socket) => {
   //---------creating the posts-----------//
   Socket.on('post', async (payload) => {
     try {
-      // console.log(payload);
+      // (payload);
       let created = await Interface.createPost(payload);
-      // console.log('payload of post',payload);
+      // ('payload of post',payload);
       let friends = await Interface.getFollowing(payload);
       // let allPosts = await Interface.getAllPosts(friends, payload);
       //------declare a new psot has been added to all client-----//
@@ -54,11 +54,11 @@ io.on('connection', (Socket) => {
 
   Socket.on('groupPost', async (payload) => {
     let createdPost = await Interface.createGroupPost(payload);
-    // console.log('createdPost', createdPost);
-    // let allGroupPosts = await Interface.allGroupPosts(payload);
-    // console.log('allGroupPosts', allGroupPosts);
-    // io.to(`group-${payload.groupID}`).emit('returnNewGroupPost', allGroupPosts);
-    io.emit('newGroupPostMade',payload.groupID);
+    // ('createdPost', createdPost);
+    let allGroupPosts = await Interface.allGroupPosts(payload);
+    // ('allGroupPosts', allGroupPosts);
+    io.to(`group-${payload.groupID}`).emit('returnNewGroupPost', allGroupPosts);
+    // io.emit('newGroupPostMade',payload.groupID);
   });
 
   Socket.on('getAllGroupPosts', async (payload) => {
@@ -80,7 +80,7 @@ io.on('connection', (Socket) => {
         return 0;
       }
     });
-    // console.log('allGroupPosts', newAllPosts);
+    // ('allGroupPosts', newAllPosts);
     // let room = `group-${payload.groupId}`;
     Socket.emit('returnNewGroupPost', newAllPosts);
   });
@@ -100,7 +100,7 @@ io.on('connection', (Socket) => {
 
   Socket.on('groupComment', async (payload) => {
     let newComment = await Interface.createGroupComment(payload);
-    // console.log(newComment);
+    // (newComment);
     let allGroupComments = await Interface.getAllGroupComments();
     io.to(`group-${payload.groupId}`).emit(
       'returnGroupComments',
@@ -111,16 +111,16 @@ io.on('connection', (Socket) => {
   Socket.on('getAllGroupComments', async () => {
     let allComments = await Interface.getAllGroupComments();
     Socket.emit('returnGroupComments', allComments);
-    // console.log('test',allComments);
+    // ('test',allComments);
   });
 
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async (payload) => {
-    // console.log('giting following 123');
+    // ('giting following 123');
     let friends = await Interface.getFollowing(payload);
-    // console.log('friends 123', friends);
+    // ('friends',friends);
     let allPosts = await Interface.getAllPosts(friends, payload);
-    // console.log('before sending the posts:', allPosts);
+    ('before sending the posts:',payload.userID, allPosts);
     let newAllPosts = allPosts.sort((a, b) => {
       if (a.id > b.id) {
         return -1;
@@ -130,6 +130,7 @@ io.on('connection', (Socket) => {
         return 0;
       }
     });
+    console.log(newAllPosts.length);
     Socket.emit('read', newAllPosts);
   });
 
@@ -141,7 +142,7 @@ io.on('connection', (Socket) => {
 
   //------making the user profile room------//
   // Socket.on('joinFollowRoom',async(payload)=>{
-  //   console.log(payload);
+  //   (payload);
   //   Socket.join(`${payload.reciverId}`);
   // });
 
@@ -149,82 +150,82 @@ io.on('connection', (Socket) => {
   //   Socket.on('join',async (payload)=>{
   //     Socket.join(`${payload.userID}`);
   //     let friends = await Interface.getFollowing(payload);
-  //     console.log(friends);
+  //     (friends);
   //     for(let i=0;i<friends.length;i++){
   //       Socket.join(`${friends[i].id}`);
   //     }
   //   });
 
   Socket.on('addFriend', async (data) => {
-    // console.log(data);
+    // (data);
     let result = await Interface.addFriend(data);
-    // console.log(result);
+    // (result);
     Socket.emit('friendAdded');
     io.emit('haveBeenFollowed', data.reciverId);
   });
 
   Socket.on('sendMessage', async (data) => {
     Socket.join(data.messageRoomId);
-    // console.log(data);
+    // (data);
     let result = await Interface.sendMessage(data);
     let allMessages = await Interface.returnMessages(data.messageRoomId);
     io.in(data.messageRoomId).emit('returnMessages', allMessages);
-    // console.log('All Messages', allMessages);
+    // ('All Messages', allMessages);
   });
 
   Socket.on('returnAllMessages', async (data) => {
     Socket.join(data.messageRoomId);
-    // console.log(data);
+    // (data);
     // let result = await Interface.sendMessage(data);
     let allMessages = await Interface.returnMessages(data.messageRoomId);
     io.in(data.messageRoomId).emit('returnMessages', allMessages);
-    // console.log('All Returned Messages', allMessages);
+    // ('All Returned Messages', allMessages);
   });
 
   Socket.on('getFollowing', async (data) => {
-    // console.log('data ', data);
+    // ('data ', data);
     let result = await Interface.getFollowing(data);
-    // console.log('following');
+    // ('following');
     Socket.emit('returnFollowing', result);
   });
 
   Socket.on('getFollowers', async (data) => {
-    // console.log('data ', data);
+    // ('data ', data);
     let result = await Interface.getFollowers(data);
-    // console.log(result);
+    // (result);
     Socket.emit('returnFollowers', result);
   });
 
   Socket.on('createGroup', async (data) => {
-    // console.log('data ', data);
+    // ('data ', data);
     let results = await Interface.createGroup(data);
-    // console.log(result);
+    // (result);
     io.emit('groupisCreated');
-    // console.log(result);
+    // (result);
   });
 
   Socket.on('getAllGroups', async (data) => {
     let result = await Interface.getAllGroups(data);
-    // console.log('returned Groups', result);
+    // ('returned Groups', result);
     Socket.emit('returnAllGroups', result);
   });
 
   Socket.on('getGroupRequests', async (data) => {
-    // console.log('data ', data);
+    // ('data ', data);
     let result = await Interface.getGroupRequests(data);
-    // console.log(result);
+    // (result);
     Socket.emit('returnGroupRequests', result);
   });
 
   Socket.on('joinGroup', async (data) => {
-    // console.log('data ', data);
+    // ('data ', data);
     let result = await Interface.joinGroup(data);
-    // console.log(result);
+    // (result);
     io.emit('joinGroupRequest', data.owner_id);
   });
 
   Socket.on('acceptJoinGroup', async (data) => {
-    // console.log('data ', data);
+    // ('data ', data);
     let result = await Interface.acceptJoinGroup(data);
 
     // let allMessages = await Interface.returnMessages(data.messageRoomId);
@@ -233,13 +234,13 @@ io.on('connection', (Socket) => {
       ownerId: data.ownerId,
       memberId: data.memberId,
     });
-    console.log('requestAccepted');
+    // ('requestAccepted');
   });
 
   Socket.on('getUsergroups', async (data) => {
-    // console.log('data ', data);
+    // ('data ', data);
     let result = await Interface.getUsergroups(data);
-    // console.log(result);
+    // (result);
     Socket.emit('returnUsergroups', result);
   });
 
@@ -253,15 +254,15 @@ io.on('connection', (Socket) => {
 
     Socket.join(`group-${data.groupId}`);
     let result = await Interface.viewGroup(data);
-    // console.log(result.group_name);
+    // (result.group_name);
     let room = `group-${data.groupId}`;
     io.in(room).emit('returnCurrentGroupContent', result);
   });
 
   Socket.on('getGroupMembers', async (data) => {
-    // console.log('data ', data);
+    // ('data ', data);
     let result = await Interface.getGroupMembers(data);
-    // console.log('ahmad result', result);
+    // ('ahmad result', result);
     Socket.emit('returnGroupMembers', result);
   });
 
@@ -273,7 +274,7 @@ io.on('connection', (Socket) => {
   //----getting target info and sending them to FE----//
   Socket.on('getTargetInfo', async (id) => {
     let target = await Interface.getTargetInfo(id);
-    // console.log(target.rows);
+    // (target.rows);
     Socket.emit('targetInfo', target.rows);
   });
   //----getting target following---//
