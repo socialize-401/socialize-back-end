@@ -9,7 +9,7 @@ const SECRET = process.env.SECRET;
 class Interface {
   static create = async (obj) => {
     let sql = `INSERT INTO auth (Email,pass,token) VALUES ($1,$2,$3) RETURNING *;`;
-    let sql1 = `INSERT INTO users (firstName,lastName) VALUES ($1,$2) RETURNING *;`;
+    let sql1 = `INSERT INTO users (firstName,lastName,image_url) VALUES ($1,$2,$3) RETURNING *;`;
     let hashedPassword = await bcrypt.hash(obj.pass, 10);
     let token = jwt.sign(
       {
@@ -21,7 +21,7 @@ class Interface {
       }
     );
     let values = [obj.email, hashedPassword, token];
-    let values1 = [obj.firstName, obj.lastName];
+    let values1 = [obj.firstName, obj.lastName, obj.imageUrl];
     await pool.query(sql, values);
     let created = await pool.query(sql1, values1);
 
@@ -46,7 +46,6 @@ class Interface {
     return created;
   };
   static read(email) {
-
     if (email) {
       let sql = `SELECT * FROM auth WHERE Email=$1;`;
       let value = [email];
@@ -101,13 +100,10 @@ class Interface {
   };
 
   static createGroup = async (obj) => {
-    // (obj);
-
     let sql = `INSERT INTO groups (group_name,owner_id,group_description) VALUES ($1,$2,$3) RETURNING *;`;
     let values = [obj.group_name, obj.group_owner, obj.group_description];
     let query = await pool.query(sql, values);
 
-    // (query.rows[0]);
     let data = query.rows[0];
 
     let sql1 = `INSERT INTO user_groups (group_id,member_id,owner_id,approval_status) VALUES ($1,$2,$3,$4) RETURNING *;`;
@@ -134,7 +130,6 @@ class Interface {
   };
 
   static getGroupRequests = async (data) => {
-
     let sql = `SELECT user_groups.group_id,user_groups.member_id,user_groups.owner_id,user_groups.approval_status,users.id,users.firstname,users.lastname,groups.group_name FROM user_groups INNER JOIN users ON users.id=user_groups.member_id INNER JOIN groups ON groups.id=user_groups.group_id WHERE user_groups.owner_id=$1 AND user_groups.approval_status=$2;`;
     let values = [data.userID, false];
     let groupRequests = await pool.query(sql, values);
@@ -142,27 +137,9 @@ class Interface {
   };
 
   static getUsergroups = async (data) => {
-    // let sql = `SELECT * FROM user_groups WHERE member_id=$1 AND approval_status=$2;`;
     let sql = `SELECT * FROM user_groups INNER JOIN groups ON groups.id=user_groups.group_id WHERE user_groups.member_id=$1 AND user_groups.approval_status=$2;`;
     let values = [data.userID, true];
     let usergroups = await pool.query(sql, values);
-
-    // (usergroups.rows);
-    //SELECT * FROM user_groups INNER JOIN groups ON groups.id=user_groups.group_id WHERE user_groups.member_id=$1 AND user_groups.approval_status=$2;
-    // let groupsNames = [];
-
-    // for (let i = 0; i < usergroups.rows.length; i++) {
-    //   let tempsql = `SELECT * FROM groups WHERE id=$1;`;
-    //   let tempvalues = [usergroups.rows[i].group_id];
-    //   let tempdata = await pool.query(tempsql, tempvalues);
-    //   // ('hi group name', tempdata.rows);
-    //   groupsNames.push(tempdata.rows[0].group_name);
-    // }
-
-    // let retrnedData = {
-    //   data: usergroups.rows,
-    //   groupsNames: groupsNames,
-    // };
 
     return usergroups.rows;
   };
@@ -175,7 +152,6 @@ class Interface {
   };
 
   static getGroupMembers = async (data) => {
-
     let sql = `SELECT users.firstname,users.lastname from users INNER JOIN user_groups ON user_groups.member_id=users.id WHERE group_id=$1 AND approval_status=$2;`;
     let values = [data.groupID, true];
     let groupData = await pool.query(sql, values);
@@ -183,12 +159,10 @@ class Interface {
   };
 
   static acceptJoinGroup = async (data) => {
-    // ('data',data);
     let sql = `UPDATE user_groups SET approval_status=$1 WHERE member_id=$2 AND group_id=$3 RETURNING *;`;
     let value = [true, data.memberId, data.groupId];
 
     let result = await pool.query(sql, value);
-    // ('results',result.rows);
     return result.rows[0];
   };
 
@@ -198,11 +172,18 @@ class Interface {
     let senderData = await pool.query(senderSql, senderValues);
 
     let senderName = `${senderData.rows[0].firstname} ${senderData.rows[0].lastname}`;
-    // (senderName);
+    console.log(data);
 
-    let sql = `INSERT INTO g_posts (content,g_member_id,g_groups_id,poster_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
-    let values = [data.postContent, data.userID, data.groupID, senderName];
+    let sql = `INSERT INTO g_posts (content,g_member_id,g_groups_id,poster_name,image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *;`;
+    let values = [
+      data.postContent,
+      data.userID,
+      data.groupID,
+      senderName,
+      data.imageUrl,
+    ];
     let query = await pool.query(sql, values);
+    console.log(query.rows[0]);
     return query.rows[0];
   };
 
@@ -218,17 +199,6 @@ class Interface {
     let sql = `SELECT users.firstname,users.lastname,friends.senderid,friends.receiverid,friends.id FROM friends INNER JOIN users ON friends.receiverid=users.id WHERE friends.senderid=$1;`;
     let values = [data.userID];
     let getFollowing = await pool.query(sql, values);
-
-    // let result = [];
-
-    // for (let i = 0; i < getFollowing.rows.length; i++) {
-    //   let tempsql = `SELECT * FROM users WHERE id=$1;`;
-    //   let tempvalues = [getFollowing.rows[i].receiverid];
-    //   let tempdata = await pool.query(tempsql, tempvalues);
-    //   // ('hi', tempdata.rows);
-    //   result.push(tempdata.rows[0]);
-    // }
-    // ('result', result);
     return getFollowing.rows;
   };
 
@@ -241,8 +211,8 @@ class Interface {
   };
 
   static createPost = async (obj) => {
-    let sql = `INSERT INTO posts (poster_id,content,poster_name) VALUES ($1,$2,$3) RETURNING *;`;
-    let values = [obj.userID, obj.postContent, obj.name];
+    let sql = `INSERT INTO posts (poster_id,content,poster_name,image_url) VALUES ($1,$2,$3,$4) RETURNING *;`;
+    let values = [obj.userID, obj.postContent, obj.name, obj.imageUrl];
     let query = await pool.query(sql, values);
     return query;
   };
@@ -251,12 +221,11 @@ class Interface {
     let result = [];
     let sql;
     let value;
-    // console.log(friends);
     for (let i = 0; i < friends.length; i++) {
       sql = `SELECT * FROM posts WHERE poster_id=$1;`;
       value = [friends[i].id];
       let all = await pool.query(sql, value);
-      result = [...result,...all.rows];
+      result = [...result, ...all.rows];
     }
     sql = `SELECT * FROM posts WHERE poster_id=$1;`;
     value = [payload.userID];
@@ -264,7 +233,7 @@ class Interface {
     result = [...result, ...all.rows];
     return result;
   };
-  
+
   static createComment = async (obj) => {
     let sql = `INSERT INTO comments (content,commenter_id,post_id,commenter_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
     let values = [obj.content, obj.userID, obj.post_id, obj.name];
@@ -298,7 +267,6 @@ class Interface {
 
   static createLike = async (obj) => {
     let sql = `UPDATE posts SET likes=likes+1 WHERE id=$1 RETURNING *`;
-    //UPDATE user_groups SET approval_status=$1 WHERE member_id=$2 AND group_id=$3 RETURNING *;
     let values = [obj];
     let all = await pool.query(sql, values);
   };

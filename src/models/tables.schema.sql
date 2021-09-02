@@ -27,6 +27,7 @@ CREATE TABLE users(
   lastName varchar(255) NOT NULL,
   age int,
   gender varchar(255),
+  image_url text , 
   auth_id SERIAL NOT NULL UNIQUE,
   FOREIGN KEY (auth_id) REFERENCES auth(id) ON DELETE CASCADE
 );
@@ -46,6 +47,7 @@ CREATE TABLE posts(
     poster_name text,
     send_time timestamp NOT NULL DEFAULT NOW(),
     likes int DEFAULT 0,
+    image_url text , 
     FOREIGN KEY (poster_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -78,6 +80,7 @@ CREATE TABLE messages(
     sender_name text,
     send_time timestamp NOT NULL DEFAULT NOW(),
     room text,
+    image_url text , 
     FOREIGN KEY (sender) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -108,6 +111,7 @@ CREATE TABLE G_posts(
     poster_name text,
     send_time timestamp NOT NULL DEFAULT NOW(),
     likes int DEFAULT 0,
+    image_url text , 
     FOREIGN KEY (G_member_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (G_groups_id) REFERENCES groups(id) ON DELETE CASCADE
 );

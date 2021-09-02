@@ -18,11 +18,7 @@ router.get('/confirmation/:token', async (req, res) => {
   } catch (e) {
     res.send(e.message);
   }
-<<<<<<< HEAD
-  return res.redirect('http://localhost:3000/');
-=======
   return res.redirect(`${process.env.CONFIRM_SIGN_UP}/`);
->>>>>>> 07d7b5a06f52757e179b67176d33ad47b936e274
 });
 
 router.get('/', (req, res) => {
@@ -74,8 +70,8 @@ router.get('/signin', async (req, res) => {
 
 router.post('/signup', checker, async (req, res) => {
   try {
-    console.log('entiring sign up');
-    const { email, pass, firstName, lastName } = req.body;
+    console.log('entiring sign up', req.body);
+    const { email, pass, firstName, lastName, imageUrl } = req.body;
     let checkEmail = await Interface.read(email);
     console.log(checkEmail.rows);
     if (checkEmail.rows.length != 0) {
@@ -86,6 +82,7 @@ router.post('/signup', checker, async (req, res) => {
         pass,
         firstName,
         lastName,
+        imageUrl,
       });
       console.log(created.rows);
     }
