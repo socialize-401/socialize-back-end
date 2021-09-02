@@ -30,8 +30,7 @@ io.on('connection', (Socket) => {
   Socket.on('post', async (payload) => {
     try {
       let created = await Interface.createPost(payload);
-      let friends = await Interface.getFollowing(payload);
-      
+      let friends = await Interface.getFollowing(payload);     
       // let allPosts = await Interface.getAllPosts(friends, payload);
       //------declare a new psot has been added to all client-----//
       io.emit('newPost');
@@ -91,6 +90,7 @@ io.on('connection', (Socket) => {
 
   //----gettin all posts to frontEnd----//
   Socket.on('getAllPosts', async (payload) => {
+    console.log('all post payload',payload);
     let friends = await Interface.getFollowing(payload);
     let allPosts = await Interface.getAllPosts(friends, payload);
     'before sending the posts:', payload.userID, allPosts;
@@ -103,7 +103,7 @@ io.on('connection', (Socket) => {
         return 0;
       }
     });
-    console.log(newAllPosts.length);
+    console.log('post length is: ',newAllPosts.length);
     Socket.emit('read', newAllPosts);
   });
 
