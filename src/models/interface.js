@@ -130,7 +130,7 @@ class Interface {
   };
 
   static getGroupRequests = async (data) => {
-    let sql = `SELECT user_groups.group_id,user_groups.member_id,user_groups.owner_id,user_groups.approval_status,users.id,users.firstname,users.lastname,groups.group_name FROM user_groups INNER JOIN users ON users.id=user_groups.member_id INNER JOIN groups ON groups.id=user_groups.group_id WHERE user_groups.owner_id=$1 AND user_groups.approval_status=$2;`;
+    let sql = `SELECT user_groups.group_id,user_groups.member_id,user_groups.owner_id,user_groups.approval_status,users.id,users.firstname,users.lastname,users.image_url,groups.group_name FROM user_groups INNER JOIN users ON users.id=user_groups.member_id INNER JOIN groups ON groups.id=user_groups.group_id WHERE user_groups.owner_id=$1 AND user_groups.approval_status=$2;`;
     let values = [data.userID, false];
     let groupRequests = await pool.query(sql, values);
     return groupRequests.rows;
@@ -152,7 +152,7 @@ class Interface {
   };
 
   static getGroupMembers = async (data) => {
-    let sql = `SELECT users.firstname,users.lastname from users INNER JOIN user_groups ON user_groups.member_id=users.id WHERE group_id=$1 AND approval_status=$2;`;
+    let sql = `SELECT users.firstname,users.lastname,users.image_url from users INNER JOIN user_groups ON user_groups.member_id=users.id WHERE group_id=$1 AND approval_status=$2;`;
     let values = [data.groupID, true];
     let groupData = await pool.query(sql, values);
     return groupData.rows;
@@ -174,12 +174,13 @@ class Interface {
     let senderName = `${senderData.rows[0].firstname} ${senderData.rows[0].lastname}`;
     console.log(data);
 
-    let sql = `INSERT INTO g_posts (content,g_member_id,g_groups_id,poster_name,image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *;`;
+    let sql = `INSERT INTO g_posts (content,g_member_id,g_groups_id,poster_name,poster_image_url,image_url) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;`;
     let values = [
       data.postContent,
       data.userID,
       data.groupID,
       senderName,
+      senderData.rows[0].image_url,
       data.imageUrl,
     ];
     let query = await pool.query(sql, values);
@@ -196,14 +197,14 @@ class Interface {
   };
 
   static getFollowing = async (data) => {
-    let sql = `SELECT users.firstname,users.lastname,friends.senderid,friends.receiverid,friends.id FROM friends INNER JOIN users ON friends.receiverid=users.id WHERE friends.senderid=$1;`;
+    let sql = `SELECT users.firstname,users.lastname,users.image_url,friends.senderid,friends.receiverid,friends.id FROM friends INNER JOIN users ON friends.receiverid=users.id WHERE friends.senderid=$1;`;
     let values = [data.userID];
     let getFollowing = await pool.query(sql, values);
     return getFollowing.rows;
   };
 
   static getFollowers = async (data) => {
-    let sql = `SELECT users.firstname,users.lastname,friends.senderid,friends.receiverid,friends.id FROM friends INNER JOIN users ON friends.senderid=users.id WHERE friends.receiverid=$1;`;
+    let sql = `SELECT users.firstname,users.lastname,users.image_url,friends.senderid,friends.receiverid,friends.id FROM friends INNER JOIN users ON friends.senderid=users.id WHERE friends.receiverid=$1;`;
     let values = [data.userID];
     let getFollowers = await pool.query(sql, values);
 
@@ -211,8 +212,14 @@ class Interface {
   };
 
   static createPost = async (obj) => {
-    let sql = `INSERT INTO posts (poster_id,content,poster_name,image_url) VALUES ($1,$2,$3,$4) RETURNING *;`;
-    let values = [obj.userID, obj.postContent, obj.name, obj.imageUrl];
+    let sql = `INSERT INTO posts (poster_id,content,poster_name,poster_image_url,image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *;`;
+    let values = [
+      obj.userID,
+      obj.postContent,
+      obj.name,
+      obj.poster_image_url,
+      obj.imageUrl,
+    ];
     let query = await pool.query(sql, values);
     return query;
   };
@@ -235,8 +242,14 @@ class Interface {
   };
 
   static createComment = async (obj) => {
-    let sql = `INSERT INTO comments (content,commenter_id,post_id,commenter_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
-    let values = [obj.content, obj.userID, obj.post_id, obj.name];
+    let sql = `INSERT INTO comments (content,commenter_id,post_id,commenter_name ,commenter_image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *;`;
+    let values = [
+      obj.content,
+      obj.userID,
+      obj.post_id,
+      obj.name,
+      obj.commenter_image_url,
+    ];
     let query = await pool.query(sql, values);
     return query.rows;
   };
@@ -247,8 +260,14 @@ class Interface {
     let readQuery = await pool.query(sequel, tempVal);
     let commenterName = `${readQuery.rows[0].firstname} ${readQuery.rows[0].lastname}`;
 
-    let sql = `INSERT INTO g_comments (content,g_commenter_id,g_post_id,g_commenter_name) VALUES ($1,$2,$3,$4) RETURNING *;`;
-    let values = [obj.content, obj.userId, obj.postId, commenterName];
+    let sql = `INSERT INTO g_comments (content,g_commenter_id,g_post_id,g_commenter_name ,commenter_image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *;`;
+    let values = [
+      obj.content,
+      obj.userId,
+      obj.postId,
+      commenterName,
+      readQuery.rows[0].image_url,
+    ];
     let query = await pool.query(sql, values);
     return query.rows[0];
   };
