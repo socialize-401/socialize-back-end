@@ -48,6 +48,7 @@ CREATE TABLE posts(
     send_time timestamp NOT NULL DEFAULT NOW(),
     likes int DEFAULT 0,
     image_url text , 
+    poster_image_url text,
     FOREIGN KEY (poster_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -57,6 +58,7 @@ CREATE TABLE comments(
     commenter_id int,
     post_id int,
     commenter_name text,
+    commenter_image_url text,
     send_time timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (commenter_id) REFERENCES users(id) ON DELETE CASCADE
@@ -111,7 +113,8 @@ CREATE TABLE G_posts(
     poster_name text,
     send_time timestamp NOT NULL DEFAULT NOW(),
     likes int DEFAULT 0,
-    image_url text , 
+    image_url text ,
+    poster_image_url text ,
     FOREIGN KEY (G_member_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (G_groups_id) REFERENCES groups(id) ON DELETE CASCADE
 );
@@ -131,6 +134,7 @@ CREATE TABLE G_comments(
     G_commenter_id int,
     G_post_id int,
     G_commenter_name text,
+    commenter_image_url text,
     send_time timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (G_commenter_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (G_post_id) REFERENCES G_posts(id) ON DELETE CASCADE
