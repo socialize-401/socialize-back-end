@@ -30,7 +30,7 @@ io.on('connection', (Socket) => {
   Socket.on('post', async (payload) => {
     try {
       let created = await Interface.createPost(payload);
-      let friends = await Interface.getFollowing(payload);
+      // let friends = await Interface.getFollowing(payload);
       
       // let allPosts = await Interface.getAllPosts(friends, payload);
       //------declare a new psot has been added to all client-----//
@@ -66,8 +66,8 @@ io.on('connection', (Socket) => {
   Socket.on('comment', async (payload) => {
     try {
       await Interface.createComment(payload);
-      let allComments = await Interface.getAllComments();
-      Socket.emit('readComments', allComments.rows);
+      // let allComments = await Interface.getAllComments();
+      io.emit('commentCreated');
     } catch (e) {
       let payload = e;
       Socket.emit('error', payload);
@@ -103,7 +103,8 @@ io.on('connection', (Socket) => {
         return 0;
       }
     });
-    console.log(newAllPosts.length);
+    console.log('friends',friends)
+    // console.log('result',allPosts)
     Socket.emit('read', newAllPosts);
   });
 

@@ -230,7 +230,7 @@ class Interface {
     let value;
     for (let i = 0; i < friends.length; i++) {
       sql = `SELECT * FROM posts WHERE poster_id=$1;`;
-      value = [friends[i].id];
+      value = [friends[i].receiverid];
       let all = await pool.query(sql, value);
       result = [...result, ...all.rows];
     }
