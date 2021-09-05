@@ -11,19 +11,34 @@ class Interface {
     let sql = `INSERT INTO auth (Email,pass,token) VALUES ($1,$2,$3) RETURNING *;`;
     let sql1 = `INSERT INTO users (firstName,lastName,image_url) VALUES ($1,$2,$3) RETURNING *;`;
     let hashedPassword = await bcrypt.hash(obj.pass, 10);
+    let values1 = [obj.firstName, obj.lastName, obj.imageUrl];
     let token = jwt.sign(
       {
-        user: obj.email,
+        user: {
+          firstname: obj.firstName,
+          lastname: obj.lastName, 
+          image_url: obj.imageUrl,
+          email: obj.email
+        }
       },
       SECRET,
       {
         expiresIn: '1d',
       }
-    );
-    let values = [obj.email, hashedPassword, token];
-    let values1 = [obj.firstName, obj.lastName, obj.imageUrl];
-    await pool.query(sql, values);
-    let created = await pool.query(sql1, values1);
+      );
+      let values = [obj.email, hashedPassword, token];
+      let authy = await pool.query(sql, values);
+      let created = await pool.query(sql1, values1);
+
+    /**
+        userID: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        age: user.age,
+        gender: user.gender,
+        auth_id: user.auth_id,
+        image_url: user.image_url,
+     */
 
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
@@ -43,7 +58,7 @@ class Interface {
       html: `<b> Welcom to socialize </b> <br> <p> to confirm your email follow this link </p>
      <br><a href="${url}">${url}</a>`, // html body
     });
-    return created;
+    return authy.rows;
   };
   static read(email) {
     if (email) {

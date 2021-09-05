@@ -14,7 +14,7 @@ require('dotenv').config();
 router.get('/confirmation/:token', async (req, res) => {
   try {
     const { user } = jwt.verify(req.params.token, SECRET);
-    let verified = await Interface.verify(user);
+    let verified = await Interface.verify(user.email);
   } catch (e) {
     res.send(e.message);
   }
@@ -53,8 +53,12 @@ router.get('/signin', async (req, res) => {
       let sql = `SELECT * FROM users WHERE id=$1;`;
       let value = [checks.rows[0].id];
       let user = await pool.query(sql, value);
+      let sql2 = `SELECT token,id FROM auth WHERE id=$1;`;
+      let token = await pool.query(sql2, value);
       // console.log(user.rows[0]);
-      return res.send(user.rows[0]);
+      let response = token.rows[0];
+      console.log('response', response)
+      return res.send(response);
     }
   } catch (e) {
     console.log(e.message);
@@ -84,7 +88,7 @@ router.post('/signup', checker, async (req, res) => {
         lastName,
         imageUrl,
       });
-      console.log(created.rows);
+      // console.log(created);
     }
     // console.log(checkEmail.rows);
   } catch (e) {
