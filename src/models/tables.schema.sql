@@ -16,7 +16,7 @@ CREATE TABLE auth(
     id SERIAL PRIMARY KEY  NOT NULL UNIQUE,
     Email varchar(255) NOT NULL ,
     pass text NOT NULL,
-    token varchar(255),
+    token text,
     user_role varchar(255),
     verified boolean DEFAULT false
 );
