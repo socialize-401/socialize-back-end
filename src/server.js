@@ -116,7 +116,7 @@ io.on('connection', (Socket) => {
   Socket.on('addFriend', async (data) => {
     let result = await Interface.addFriend(data);
     Socket.emit('friendAdded');
-    io.emit('haveBeenFollowed', data.reciverId);
+    io.emit('haveBeenFollowed', data);
   });
 
   Socket.on('sendMessage', async (data) => {
@@ -124,6 +124,7 @@ io.on('connection', (Socket) => {
     let result = await Interface.sendMessage(data);
     let allMessages = await Interface.returnMessages(data.messageRoomId);
     io.in(data.messageRoomId).emit('returnMessages', allMessages);
+    io.emit('notification', data);
   });
 
   Socket.on('returnAllMessages', async (data) => {
