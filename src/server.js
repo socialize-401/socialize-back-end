@@ -5,9 +5,16 @@ const cors = require('cors');
 const http = require('http');
 const app = express();
 const server = http.createServer(app);
-const io = require('socket.io')(http);
+// const io = require('socket.io')(http);
 const router = require('./routes/router');
 const Interface = require('./models/interface');
+
+const io = require('socket.io')(http, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
 
 app.use(cors());
 
@@ -31,7 +38,7 @@ io.on('connection', (Socket) => {
     try {
       let created = await Interface.createPost(payload);
       // let friends = await Interface.getFollowing(payload);
-      
+
       // let allPosts = await Interface.getAllPosts(friends, payload);
       //------declare a new psot has been added to all client-----//
       io.emit('newPost');
@@ -103,7 +110,7 @@ io.on('connection', (Socket) => {
         return 0;
       }
     });
-    console.log('friends',friends)
+    console.log('friends', friends);
     // console.log('result',allPosts)
     Socket.emit('read', newAllPosts);
   });
@@ -190,11 +197,7 @@ io.on('connection', (Socket) => {
     let result = await Interface.viewGroup(data);
     let room = `group-${data.groupId}`;
     io.in(room).emit('returnCurrentGroupContent', result);
-  });
-
-  Socket.on('getGroupMembers', async (data) => {
-    let result = await Interface.getGroupMembers(data);
-    Socket.emit('returnGroupMembers', result);
+    returnAllMessagesocket.emit('returnGroupMembers', result);
   });
 
   Socket.on('groupPostLike', async (payload) => {
@@ -232,6 +235,34 @@ io.on('connection', (Socket) => {
   Socket.on('like', async (payload) => {
     let likes = await Interface.createLike(payload);
     io.emit('newLike');
+  });
+
+  //video call things hopfully working
+
+  Socket.emit('me', Socket.id);
+
+  Socket.on('disconnect', () => {
+    Socket.broadcast.emit('callEnded');
+  });
+
+  Socket.on(
+    'callUser',
+    ({ userToCall, signalData, from, name, messageReceiverId }) => {
+      console.log(userToCall, signalData, from, name);
+      Socket.join(userToCall);
+      io.to(userToCall).emit('callUser2', {
+        signal: signalData,
+        from,
+        name,
+        hi: 'hi2',
+      });
+      let data = { name, messageReceiverId };
+      io.emit('callNotification', data);
+    }
+  );
+
+  Socket.on('answerCall', (data) => {
+    io.to(data.to).emit('callAccepted', data.signal);
   });
 });
 
