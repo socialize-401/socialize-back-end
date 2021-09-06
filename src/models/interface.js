@@ -187,9 +187,7 @@ class Interface {
     let senderData = await pool.query(senderSql, senderValues);
 
     let senderName = `${senderData.rows[0].firstname} ${senderData.rows[0].lastname}`;
-    console.log(data);
-
-    let sql = `INSERT INTO g_posts (content,g_member_id,g_groups_id,poster_name,poster_image_url,image_url) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;`;
+     let sql = `INSERT INTO g_posts (content,g_member_id,g_groups_id,poster_name,poster_image_url,image_url) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;`;
     let values = [
       data.postContent,
       data.userID,
@@ -199,7 +197,6 @@ class Interface {
       data.imageUrl,
     ];
     let query = await pool.query(sql, values);
-    console.log(query.rows[0]);
     return query.rows[0];
   };
 
@@ -300,16 +297,25 @@ class Interface {
   };
 
   static createLike = async (obj) => {
-    let sql = `UPDATE posts SET likes=likes+1 WHERE id=$1 RETURNING *`;
-    let values = [obj];
-    let all = await pool.query(sql, values);
+    let values = [obj.id];
+    let sql = 'UPDATE posts SET likes = ARRAY_APPEND(likes,$2) WHERE id=$1;';
+    let likesSql = 'SELECT likes from posts where id=$1;';
+    let likes = await pool.query(likesSql,values);
+    if(likes.rows[0].likes==null||!likes.rows[0].likes.includes(obj.userID)){
+      let query1 = await pool.query(sql,[obj.id,obj.userID]);
+    }
+ 
   };
-
+    
   static createGroupPostLike = async (obj) => {
-    let sql = `UPDATE G_posts SET likes=likes+1 WHERE id=$1 RETURNING *;`;
     let values = [obj.postId];
-    let likes = await pool.query(sql, values);
-    return likes.rows;
+    let sql = 'UPDATE G_posts SET likes = ARRAY_APPEND(likes,$2) WHERE id=$1;';
+    let likesSql = 'SELECT likes from G_posts where id=$1;';
+    let likes = await pool.query(likesSql,values);
+    if(likes.rows[0].likes==null||!likes.rows[0].likes.includes(obj.userId)){
+      let query1 = await pool.query(sql,[obj.postId,obj.userId]);
+    }
+  
   };
 
   //----getting target profile info from DB----//
@@ -327,3 +333,7 @@ class Interface {
 }
 
 module.exports = Interface;
+
+
+
+

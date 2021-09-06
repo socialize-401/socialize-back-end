@@ -201,8 +201,10 @@ io.on('connection', (Socket) => {
   });
 
   Socket.on('groupPostLike', async (payload) => {
-    let newLikes = await Interface.createGroupPostLike(payload);
-    Socket.emit('returnGroupLikes', newLikes);
+    await Interface.createGroupPostLike(payload);
+    let allGroupPosts = await Interface.allGroupPosts({groupID:payload.groupId});
+    console.log('the group id',payload.groupId,allGroupPosts);
+    io.to(`group-${payload.groupId}`).emit('returnNewGroupPost', allGroupPosts);
   });
 
   //----getting target info and sending them to FE----//
