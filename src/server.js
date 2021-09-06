@@ -197,11 +197,7 @@ io.on('connection', (Socket) => {
     let result = await Interface.viewGroup(data);
     let room = `group-${data.groupId}`;
     io.in(room).emit('returnCurrentGroupContent', result);
-  });
-
-  Socket.on('getGroupMembers', async (data) => {
-    let result = await Interface.getGroupMembers(data);
-    Socket.emit('returnGroupMembers', result);
+    returnAllMessagesocket.emit('returnGroupMembers', result);
   });
 
   Socket.on('groupPostLike', async (payload) => {
@@ -247,16 +243,21 @@ io.on('connection', (Socket) => {
     Socket.broadcast.emit('callEnded');
   });
 
-  Socket.on('callUser', ({ userToCall, signalData, from, name }) => {
-    console.log(userToCall, signalData, from, name);
-    Socket.join(userToCall);
-    io.to(userToCall).emit('callUser', {
-      signal: signalData,
-      from,
-      name,
-      hi: 'hi2',
-    });
-  });
+  Socket.on(
+    'callUser',
+    ({ userToCall, signalData, from, name, messageReceiverId }) => {
+      console.log(userToCall, signalData, from, name);
+      Socket.join(userToCall);
+      io.to(userToCall).emit('callUser2', {
+        signal: signalData,
+        from,
+        name,
+        hi: 'hi2',
+      });
+      let data = { name, messageReceiverId };
+      io.emit('callNotification', data);
+    }
+  );
 
   Socket.on('answerCall', (data) => {
     io.to(data.to).emit('callAccepted', data.signal);
