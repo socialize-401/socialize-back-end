@@ -46,7 +46,7 @@ CREATE TABLE posts(
     poster_id int NOT NULL ,
     poster_name text,
     send_time timestamp NOT NULL DEFAULT NOW(),
-    likes int DEFAULT 0,
+    likes integer[],
     image_url text , 
     poster_image_url text,
     FOREIGN KEY (poster_id) REFERENCES users(id) ON DELETE CASCADE
@@ -112,7 +112,7 @@ CREATE TABLE G_posts(
     G_groups_id int NOT NULL,
     poster_name text,
     send_time timestamp NOT NULL DEFAULT NOW(),
-    likes int DEFAULT 0,
+    likes integer[],
     image_url text ,
     poster_image_url text ,
     FOREIGN KEY (G_member_id) REFERENCES users(id) ON DELETE CASCADE,
