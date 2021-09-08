@@ -134,6 +134,8 @@ io.on('connection', (Socket) => {
     io.emit('notification', data);
   });
 
+  ///;lkjfgosafjpoads
+
   Socket.on('returnAllMessages', async (data) => {
     Socket.join(data.messageRoomId);
     let allMessages = await Interface.returnMessages(data.messageRoomId);
@@ -172,7 +174,7 @@ io.on('connection', (Socket) => {
 
   Socket.on('acceptJoinGroup', async (data) => {
     let result = await Interface.acceptJoinGroup(data);
-    io.emit('acceptedToGroupNoti',data);
+    io.emit('acceptedToGroupNoti', data);
     io.emit('requestAccepted', {
       ownerId: data.ownerId,
       memberId: data.memberId,
