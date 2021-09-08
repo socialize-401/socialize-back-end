@@ -202,8 +202,10 @@ io.on('connection', (Socket) => {
 
   Socket.on('groupPostLike', async (payload) => {
     await Interface.createGroupPostLike(payload);
-    let allGroupPosts = await Interface.allGroupPosts({groupID:payload.groupId});
-    console.log('the group id',payload.groupId,allGroupPosts);
+    let allGroupPosts = await Interface.allGroupPosts({
+      groupID: payload.groupId,
+    });
+    console.log('the group id', payload.groupId, allGroupPosts);
     io.to(`group-${payload.groupId}`).emit('returnNewGroupPost', allGroupPosts);
   });
 
@@ -243,6 +245,13 @@ io.on('connection', (Socket) => {
 
   Socket.on('disconnect', () => {
     Socket.broadcast.emit('callEnded');
+  });
+
+  Socket.on('getGroupMembers', async (data) => {
+    // console.log('data ', data);
+    let result = await Interface.getGroupMembers(data);
+    // console.log('ahmad result', result);
+    Socket.emit('returnGroupMembers', result);
   });
 
   Socket.on(
