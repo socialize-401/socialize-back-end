@@ -62,7 +62,7 @@ router.get('/signin', async (req, res) => {
     }
   } catch (e) {
     console.log(e.message);
-    res.status(500).send(e);
+    res.status(401).send(e);
   }
 });
 
